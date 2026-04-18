@@ -8,6 +8,24 @@
 import Foundation
 import SwiftData
 
+/// Predefined book genres for the picker.
+/// Covers the most common categories a knowledge-seeking reader would use.
+enum BookGenre: String, CaseIterable, Codable {
+    case selfHelp = "Self-Help"
+    case nonFiction = "Non-Fiction"
+    case fiction = "Fiction"
+    case science = "Science"
+    case philosophy = "Philosophy"
+    case psychology = "Psychology"
+    case business = "Business"
+    case biography = "Biography"
+    case history = "History"
+    case technology = "Technology"
+    case fantasy = "Fantasy"
+    case mystery = "Mystery"
+    case other = "Other"
+}
+
 /// Represents a book that the user has read or is reading.
 /// Each book can have multiple notes attached via a one-to-many relationship.
 @Model
@@ -17,6 +35,15 @@ final class Book {
 
     /// The author of the book
     var author: String
+
+    /// The genre of the book, stored as a raw string for SwiftData compatibility
+    var genreRawValue: String
+
+    /// Computed genre accessor
+    var genre: BookGenre {
+        get { BookGenre(rawValue: genreRawValue) ?? .other }
+        set { genreRawValue = newValue.rawValue }
+    }
 
     /// Optional cover image stored as compressed JPEG data
     @Attribute(.externalStorage)
@@ -29,9 +56,10 @@ final class Book {
     @Relationship(deleteRule: .cascade, inverse: \Note.book)
     var notes: [Note] = []
 
-    init(title: String, author: String, coverImageData: Data? = nil, dateAdded: Date = .now) {
+    init(title: String, author: String, genre: BookGenre = .other, coverImageData: Data? = nil, dateAdded: Date = .now) {
         self.title = title
         self.author = author
+        self.genreRawValue = genre.rawValue
         self.coverImageData = coverImageData
         self.dateAdded = dateAdded
     }

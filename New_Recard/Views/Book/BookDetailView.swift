@@ -2,102 +2,113 @@
 //  BookDetailView.swift
 //  New_Recard
 //
-//  Displays book details and a list of associated notes.
+//  Detail view for a single book showing its info and associated notes.
 //
 
 import SwiftUI
 import SwiftData
 
-/// Detailed view for a single book. (Screen 3 & 5)
-/// Shows book info, its notes, and allows adding new notes.
+/// Shows book cover, title, author, and a list of notes.
+/// Provides Edit / Delete via a toolbar menu and an "Add note" CTA.
 struct BookDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    // The book being viewed
+
+    /// The book being displayed
     @Bindable var book: Book
-    
-    // Fetch notes specifically for this book, sorted by date created
-    @Query private var allNotes: [Note]
+
+    /// Notes sorted newest-first from the relationship
     private var bookNotes: [Note] {
-        allNotes.filter { $0.book == book }.sorted(by: { $0.dateCreated > $1.dateCreated })
+        book.notes.sorted(by: { $0.dateCreated > $1.dateCreated })
     }
-    
+
     @State private var showingAddNote = false
     @State private var showingEditBook = false
     @State private var showingDeleteAlert = false
-    
-    // Standard initializer
+
     init(book: Book) {
         self.book = book
     }
-    
+
     var body: some View {
         ZStack {
-            AppTheme.backgroundPrimary.ignoresSafeArea()
-            
+            Color(UIColor.systemBackground)
+                .overlay(AppTheme.backgroundPrimary)
+                .ignoresSafeArea()
+
             VStack(spacing: 0) {
-                // Book Header Section
+                // ── Book Info Header ──
                 bookHeader
-                    .padding()
-                
+                    .padding(.horizontal, AppTheme.pagePadding)
+                    .padding(.vertical, 20)
+
+                // Subtle divider
                 Rectangle()
-                    .fill(AppTheme.backgroundSecondary)
+                    .fill(AppTheme.divider)
                     .frame(height: 1)
-                    .padding(.horizontal)
-                
-                // Notes List Section
+                    .padding(.horizontal, AppTheme.pagePadding)
+
+                // ── Notes Section ──
                 if bookNotes.isEmpty {
+                    // Friendly empty state for notes
+                    Spacer()
+                    VStack(spacing: 12) {
+                        Image(systemName: "note.text")
+                            .font(.system(size: 36))
+                            .foregroundStyle(AppTheme.primary.opacity(0.4))
+                        Text("No highlights yet.\nCapture your first insight below.")
+                            .font(.callout)
+                            .foregroundStyle(AppTheme.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(3)
+                    }
                     Spacer()
                 } else {
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 12) {
                             ForEach(bookNotes) { note in
                                 NavigationLink(value: note) {
-                                    // Reuse RecentNoteCard visually, just with different data
                                     RecentNoteCard(note: note)
                                 }
                                 .buttonStyle(.plain)
                             }
                         }
-                        .padding()
+                        .padding(AppTheme.pagePadding)
                     }
                 }
-                
-                // Add Note Button
-                Button {
-                    showingAddNote = true
-                } label: {
+
+                // ── Add Note CTA ──
+                Button { showingAddNote = true } label: {
                     Text("Add note")
                         .font(.headline)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(AppTheme.textPrimary)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(AppTheme.primaryGold)
-                        .clipShape(RoundedRectangle(cornerRadius: 25))
+                        .frame(height: 52)
+                        .background(AppTheme.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 26))
                 }
-                .padding()
+                .padding(.horizontal, AppTheme.pagePadding)
+                .padding(.bottom, 16)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button {
-                        showingEditBook = true
-                    } label: {
+                    Button { showingEditBook = true } label: {
                         Label("Edit", systemImage: "pencil")
                     }
-                    
-                    Button(role: .destructive) {
-                        showingDeleteAlert = true
-                    } label: {
+                    Button(role: .destructive) { showingDeleteAlert = true } label: {
                         Label("Delete", systemImage: "trash")
-                            .foregroundStyle(AppTheme.destructive)
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle.fill")
-                        .foregroundStyle(AppTheme.textPrimary, AppTheme.backgroundSecondary)
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.overlay(AppTheme.backgroundPrimary))
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                 }
             }
         }
@@ -109,58 +120,73 @@ struct BookDetailView: View {
         }
         .alert("Delete Book", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                deleteBook()
-            }
+            Button("Delete", role: .destructive) { deleteBook() }
         } message: {
-            Text("Are you sure you want to delete '\(book.title)'? This will also delete all attached notes.")
+            Text("Deleting \"\(book.title)\" will also remove all its notes. This action cannot be undone.")
         }
     }
-    
-    /// Header showing cover thumbnail, title, and author
+
+    // MARK: - Book Header
+
+    /// Displays cover, title, and author in a horizontal layout
     private var bookHeader: some View {
-        HStack(spacing: 16) {
-            // Cover Thumbnail
+        HStack(spacing: 18) {
+            // Cover thumbnail
             ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(AppTheme.backgroundSecondary)
-                    .frame(width: 80, height: 110)
-                
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
+                    .fill(AppTheme.cardFill)
+                    .frame(width: 85, height: 115)
+
                 if let data = book.coverImageData, let image = UIImage(data: data) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 80, height: 110)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .frame(width: 85, height: 115)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
                 } else {
-                    Image(systemName: "photo")
-                        .foregroundStyle(AppTheme.textSecondary)
+                    Image(systemName: "text.book.closed.fill")
+                        .font(.title3)
+                        .foregroundStyle(AppTheme.primary.opacity(0.5))
                 }
             }
-            
-            // Text Info
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Book Title")
-                    .font(.caption)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
+                    .stroke(AppTheme.divider, lineWidth: 1)
+            )
+
+            // Title, Author & Genre — HIG hierarchy
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Title")
+                    .font(.footnote)
                     .foregroundStyle(AppTheme.textSecondary)
                 Text(book.title)
                     .font(.headline)
                     .foregroundStyle(AppTheme.textPrimary)
-                
-                Spacer().frame(height: 8)
-                
+
+                Spacer().frame(height: 6)
+
                 Text("Author")
-                    .font(.caption)
+                    .font(.footnote)
                     .foregroundStyle(AppTheme.textSecondary)
                 Text(book.author)
                     .font(.subheadline)
                     .foregroundStyle(AppTheme.textPrimary)
+
+                Spacer().frame(height: 6)
+
+                Text("Genre")
+                    .font(.footnote)
+                    .foregroundStyle(AppTheme.textSecondary)
+                Text(book.genre.rawValue)
+                    .font(.subheadline)
+                    .foregroundStyle(AppTheme.textPrimary)
             }
-            
+
             Spacer()
         }
     }
-    
+
+    /// Deletes the book and pops navigation
     private func deleteBook() {
         modelContext.delete(book)
         dismiss()

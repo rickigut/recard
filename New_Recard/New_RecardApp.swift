@@ -25,7 +25,7 @@ struct New_RecardApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(.light)
         }
         .modelContainer(sharedModelContainer)
     }

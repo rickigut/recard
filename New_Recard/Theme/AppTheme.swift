@@ -2,43 +2,73 @@
 //  AppTheme.swift
 //  New_Recard
 //
-//  Centralized color tokens for the Recard app.
-//  All colors are monochrome variations of the primary gold #FAD100.
+//  Hi-fi design system for Recard.
+//  Strict monochromatic palette derived entirely from #FAD100.
+//  Only value (brightness) and opacity are manipulated — no foreign hues.
 //
 
 import SwiftUI
 
-/// Design tokens for the Recard app theme.
-/// Monochrome palette derived from primary gold #FAD100 by adjusting HSB values.
+/// Centralized design tokens for the Recard hi-fi theme.
+/// Every color is derived from #FAD100 (HSB 50°, 100%, 98%)
+/// by adjusting brightness or opacity only.
 enum AppTheme {
 
-    // MARK: - Primary Gold Palette
+    // MARK: - Brand Primary
 
-    /// Main accent color — #FAD100 (HSB: 49°, 100%, 98%)
-    static let primaryGold = Color(red: 250 / 255, green: 209 / 255, blue: 0 / 255)
+    /// Full-strength brand gold — #FAD100
+    static let primary = Color(red: 250 / 255, green: 209 / 255, blue: 0 / 255)
 
-    /// Darker variant for pressed states — reduced brightness
-    static let primaryGoldDark = Color(red: 200 / 255, green: 168 / 255, blue: 0 / 255)
+    /// Darker gold for pressed / hover states — ~70% brightness
+    static let primaryPressed = Color(hue: 50 / 360, saturation: 1.0, brightness: 0.70)
 
-    /// Lighter variant for subtle highlights — reduced saturation
-    static let primaryGoldLight = Color(red: 252 / 255, green: 228 / 255, blue: 77 / 255)
+    // MARK: - Tinted Backgrounds (gold at low opacity for clean cards & sections)
 
-    /// Very dark muted variant for borders and dividers
-    static let primaryGoldMuted = Color(red: 61 / 255, green: 52 / 255, blue: 0 / 255)
+    /// Extremely subtle gold wash for the main canvas — 4% opacity
+    static let backgroundPrimary = Color(red: 250 / 255, green: 209 / 255, blue: 0 / 255)
+        .opacity(0.04)
 
-    // MARK: - Backgrounds
+    /// Light gold tint for cards & elevated surfaces — 10% opacity
+    static let cardFill = Color(red: 250 / 255, green: 209 / 255, blue: 0 / 255)
+        .opacity(0.10)
 
-    /// Main app background — pure black
-    static let backgroundPrimary = Color.black
+    /// Medium gold tint for input fields — 8% opacity
+    static let inputFill = Color(red: 250 / 255, green: 209 / 255, blue: 0 / 255)
+        .opacity(0.08)
 
-    /// Elevated surface background for cards and sheets — #1C1C1E
-    static let backgroundSecondary = Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255)
+    /// Soft gold stroke for borders / dividers — 15% opacity
+    static let divider = Color(red: 250 / 255, green: 209 / 255, blue: 0 / 255)
+        .opacity(0.15)
 
-    // MARK: - Text
+    // MARK: - Text (dark shades of #FAD100 for readability)
 
-    /// Primary text color — white
-    static let textPrimary = Color.white
+    /// Near-black with gold hue — primary text (titles, body)
+    static let textPrimary = Color(hue: 50 / 360, saturation: 0.60, brightness: 0.18)
 
-    /// Secondary/muted text color — system gray #8E8E93
-    static let textSecondary = Color(red: 142 / 255, green: 142 / 255, blue: 147 / 255)
+    /// Medium-dark gold — secondary text (captions, labels)
+    static let textSecondary = Color(hue: 50 / 360, saturation: 0.40, brightness: 0.40)
+
+    /// Placeholder text — lighter shade
+    static let textPlaceholder = Color(hue: 50 / 360, saturation: 0.20, brightness: 0.65)
+
+    // MARK: - Iconography
+
+    /// Icon tint — slightly muted gold for non-primary icons
+    static let iconSecondary = Color(hue: 50 / 360, saturation: 0.30, brightness: 0.55)
+
+    // MARK: - Semantic
+
+    /// Destructive actions — dark desaturated shade (no red)
+    static let destructive = Color(hue: 50 / 360, saturation: 0.80, brightness: 0.35)
+
+    // MARK: - Layout Constants
+
+    /// Consistent corner radius across cards & buttons
+    static let cornerRadius: CGFloat = 16
+
+    /// Smaller corner radius for inputs & chips
+    static let cornerRadiusSmall: CGFloat = 12
+
+    /// Standard horizontal page padding
+    static let pagePadding: CGFloat = 24
 }

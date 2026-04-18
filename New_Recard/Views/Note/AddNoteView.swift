@@ -2,161 +2,170 @@
 //  AddNoteView.swift
 //  New_Recard
 //
-//  Sheet to add or edit a Cornell method note for a specific book.
+//  Sheet for creating or editing a Cornell-method reading note.
 //
 
 import SwiftUI
 import SwiftData
 
-/// Form to create or edit a Note. (Screen 4)
-/// Uses the Cornell Note structure: Cues, Notes, Summary.
+/// Form to create or edit a Note using the Cornell structure:
+/// Cues (key questions), Notes (main content), and Summary.
 struct AddNoteView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    // The book this note belongs to (required for new notes)
+
+    /// The book this note belongs to
     var book: Book?
-    // The note to edit (optional)
+    /// If provided, the view operates in edit mode
     var noteToEdit: Note?
-    
-    // Form State
+
+    // Form state
     @State private var cues: String = ""
     @State private var content: String = ""
     @State private var summary: String = ""
-    
+
+    /// Whether we're editing an existing note
     private var isEditing: Bool { noteToEdit != nil }
+
+    /// At least one field must have content
     private var isFormValid: Bool {
         !cues.trimmingCharacters(in: .whitespaces).isEmpty ||
         !content.trimmingCharacters(in: .whitespaces).isEmpty ||
         !summary.trimmingCharacters(in: .whitespaces).isEmpty
     }
-    
+
     init(book: Book? = nil, noteToEdit: Note? = nil) {
         self.book = book
         self.noteToEdit = noteToEdit
-        
         if let note = noteToEdit {
             _cues = State(initialValue: note.cues)
             _content = State(initialValue: note.content)
             _summary = State(initialValue: note.summary)
-            // If editing, make sure book is set to the note's book if not explicitly passed
-            if self.book == nil {
-                self.book = note.book
-            }
+            if self.book == nil { self.book = note.book }
         }
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
-                AppTheme.backgroundPrimary.ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        
-                        // Cues Section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Cues")
-                                .font(.headline)
-                                .foregroundStyle(AppTheme.textPrimary)
-                            Text("Lorem ipsum dolor sit amet")
-                                .font(.caption)
-                                .foregroundStyle(AppTheme.textSecondary)
-                            TextField("Input cues...", text: $cues)
-                                .textFieldStyle(CustomTextFieldStyle())
+                Color(UIColor.systemBackground)
+                    .overlay(AppTheme.backgroundPrimary)
+                    .ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 28) {
+
+                        // ── Cues ──
+                        fieldSection(
+                            title: "Cues",
+                            hint: "Key questions or trigger words from this reading."
+                        ) {
+                            TextField("e.g. Why do habits compound?", text: $cues)
+                                .textFieldStyle(RecardTextFieldStyle())
                         }
-                        
-                        // Notes Section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Notes")
-                                .font(.headline)
-                                .foregroundStyle(AppTheme.textPrimary)
-                            Text("Lorem ipsum dolor sit amet")
-                                .font(.caption)
-                                .foregroundStyle(AppTheme.textSecondary)
-                            
-                            // TextEditor needs a background differently than TextField
-                            TextEditor(text: $content)
-                                .frame(height: 120)
-                                .scrollContentBackground(.hidden) // Required to show custom background
-                                .padding(8)
-                                .background(AppTheme.backgroundSecondary)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .foregroundStyle(AppTheme.textPrimary)
-                                .overlay(
-                                    // Custom placeholder for TextEditor
-                                    Group {
-                                        if content.isEmpty {
-                                            Text("Input notes...")
-                                                .foregroundStyle(AppTheme.textSecondary)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 16)
-                                                .allowsHitTesting(false)
-                                        }
-                                    }, alignment: .topLeading
-                                )
+
+                        // ── Notes ──
+                        fieldSection(
+                            title: "Notes",
+                            hint: "Your reading highlights, ideas, and observations."
+                        ) {
+                            noteEditor(text: $content, placeholder: "Write your reading notes here…", height: 140)
                         }
-                        
-                        // Summary Section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Summary")
-                                .font(.headline)
-                                .foregroundStyle(AppTheme.textPrimary)
-                            Text("Lorem ipsum dolor sit amet")
-                                .font(.caption)
-                                .foregroundStyle(AppTheme.textSecondary)
-                            
-                            TextEditor(text: $summary)
-                                .frame(height: 80)
-                                .scrollContentBackground(.hidden)
-                                .padding(8)
-                                .background(AppTheme.backgroundSecondary)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .foregroundStyle(AppTheme.textPrimary)
-                                .overlay(
-                                    Group {
-                                        if summary.isEmpty {
-                                            Text("Input summary...")
-                                                .foregroundStyle(AppTheme.textSecondary)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 16)
-                                                .allowsHitTesting(false)
-                                        }
-                                    }, alignment: .topLeading
-                                )
+
+                        // ── Summary ──
+                        fieldSection(
+                            title: "Summary",
+                            hint: "A brief takeaway you want to remember."
+                        ) {
+                            noteEditor(text: $summary, placeholder: "Summarize the key insight…", height: 90)
                         }
-                        
+
                     }
-                    .padding()
+                    .padding(AppTheme.pagePadding)
                 }
             }
-            .navigationTitle(isEditing ? "Edit Notes" : "Add Notes")
+            .navigationTitle(isEditing ? "Edit Note" : "Add Note")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Cancel — circular with backgroundPrimary fill
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(AppTheme.textPrimary, AppTheme.backgroundSecondary)
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .frame(width: 36, height: 36)
+                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                     }
                 }
-                
+
+                // Save — circular with backgroundPrimary fill
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        saveNote()
-                    } label: {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(isFormValid ? AppTheme.textPrimary : AppTheme.textSecondary,
-                                             AppTheme.backgroundSecondary)
+                    Button { saveNote() } label: {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(isFormValid ? AppTheme.primary : AppTheme.textPlaceholder)
+                            .frame(width: 36, height: 36)
+                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                     }
                     .disabled(!isFormValid)
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .tint(AppTheme.primary)
     }
-    
+
+    // MARK: - Reusable Section Builder
+
+    /// Builds a labeled field section with a title, hint, and content
+    private func fieldSection<Content: View>(
+        title: String,
+        hint: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.title3.bold())
+                .foregroundStyle(AppTheme.textPrimary)
+            Text(hint)
+                .font(.footnote)
+                .foregroundStyle(AppTheme.textSecondary)
+                .lineSpacing(2)
+            content()
+        }
+    }
+
+    // MARK: - TextEditor with Placeholder
+
+    /// Multi-line text editor with a custom placeholder overlay
+    private func noteEditor(text: Binding<String>, placeholder: String, height: CGFloat) -> some View {
+        TextEditor(text: text)
+            .frame(minHeight: height)
+            .scrollContentBackground(.hidden)
+            .padding(12)
+            .background(AppTheme.inputFill)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
+            .foregroundStyle(AppTheme.textPrimary)
+            .tint(AppTheme.primary)
+            .overlay(
+                Group {
+                    if text.wrappedValue.isEmpty {
+                        Text(placeholder)
+                            .foregroundStyle(AppTheme.textPlaceholder)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 20)
+                            .allowsHitTesting(false)
+                    }
+                }, alignment: .topLeading
+            )
+    }
+
+    // MARK: - Save
+
+    /// Persists the note to SwiftData
     private func saveNote() {
         if let note = noteToEdit {
             note.cues = cues
@@ -164,7 +173,7 @@ struct AddNoteView: View {
             note.summary = summary
         } else if let targetBook = book {
             let newNote = Note(cues: cues, content: content, summary: summary)
-            targetBook.notes.append(newNote) // SwiftData automatically inserts when appended to relationship
+            targetBook.notes.append(newNote)
         }
         dismiss()
     }

@@ -2,111 +2,96 @@
 //  HomeView.swift
 //  New_Recard
 //
-//  Main landing page showing recent notes and book collection.
+//  Root screen of the app. Uses Apple's native .searchable modifier
+//  and NavigationStack for HIG-compliant search and navigation.
 //
 
 import SwiftUI
 import SwiftData
 
-/// The main entry point view of the app (HomePage).
-/// Displays empty state or a list of books and the most recent note.
+/// Root view — switches between empty and populated states
+/// while keeping the header and "+" button always visible.
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
-    
-    // Fetch all books sorted by date added
+
+    /// All books, newest first
     @Query(sort: \Book.dateAdded, order: .reverse) private var books: [Book]
-    
-    // Fetch all notes sorted by date created to find the single most recent note
+
+    /// All notes, newest first — only `.first` is used for the Recent Note
     @Query(sort: \Note.dateCreated, order: .reverse) private var notes: [Note]
-    
-    // State to present the AddBookView sheet
+
+    /// Controls the Add Book sheet presentation
     @State private var showingAddBook = false
-    
+
+    /// Search text bound to Apple's native .searchable
+    @State private var searchText: String = ""
+
+    /// Currently selected genre filter — nil means "All"
+    @State private var selectedGenreFilter: BookGenre? = nil
+
+    /// Filtered books based on search text and genre selection
+    private var filteredBooks: [Book] {
+        books.filter { book in
+            // Search filter: match title (case-insensitive)
+            let matchesSearch = searchText.isEmpty ||
+                book.title.localizedCaseInsensitiveContains(searchText)
+
+            // Genre filter: match selected genre or show all
+            let matchesGenre = selectedGenreFilter == nil ||
+                book.genre == selectedGenreFilter
+
+            return matchesSearch && matchesGenre
+        }
+    }
+
+    /// Genres that actually appear in the user's book collection
+    private var availableGenres: [BookGenre] {
+        let genreSet = Set(books.map { $0.genre })
+        return BookGenre.allCases.filter { genreSet.contains($0) }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
-                AppTheme.backgroundPrimary.ignoresSafeArea()
-                
-                if books.isEmpty {
-                    // Empty state when no books exist (Screen 1)
-                    EmptyStateView {
-                        showingAddBook = true
-                    }
-                } else {
-                    // Populated state with content (Screen 7)
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 32) {
-                            
-                            // App Header Title
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Recard")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(AppTheme.textPrimary)
-                                Text("Lorem ipsum dolor sit amet")
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppTheme.textSecondary)
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, 16)
-                            
-                            // 1. Recent Note Section (Only shows if notes exist)
-                            if let recentNote = notes.first {
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Text("Recent Note")
-                                        .font(.headline)
-                                        .foregroundStyle(AppTheme.textPrimary)
-                                        .padding(.horizontal)
-                                    
-                                    NavigationLink(value: recentNote) {
-                                        RecentNoteCard(note: recentNote)
-                                            .padding(.horizontal)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            
-                            // 2. Books Gallery Section
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Books")
-                                    .font(.headline)
-                                    .foregroundStyle(AppTheme.textPrimary)
-                                    .padding(.horizontal)
-                                
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 16) {
-                                        ForEach(books) { book in
-                                            NavigationLink(value: book) {
-                                                BookCard(book: book)
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                            
-                            Spacer(minLength: 40)
-                        }
+                // Full-screen gold-tinted canvas
+                Color(UIColor.systemBackground)
+                    .overlay(AppTheme.backgroundPrimary)
+                    .ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    if books.isEmpty {
+                        // ── Empty State ──
+                        Spacer()
+                        EmptyStateView { showingAddBook = true }
+                        Spacer()
+                        Spacer()
+                    } else {
+                        // ── Populated Content ──
+                        populatedContent
                     }
                 }
             }
+            // HIG: Large title for the brand name
             .navigationTitle("Recard")
-            .navigationBarTitleDisplayMode(.inline)
-            // Hide default nav bar in populated state as we have a custom header
-            .toolbar(books.isEmpty ? .visible : .hidden, for: .navigationBar)
+            // HIG: Native .searchable with bottom placement
+            .searchable(text: $searchText, placement: .automatic, prompt: "Search books…")
             .toolbar {
+                // Circular "+" button in the top bar
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingAddBook = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(AppTheme.textPrimary, AppTheme.backgroundSecondary)
-                            .font(.title2)
+                    Button { showingAddBook = true } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .frame(width: 36, height: 36)
+                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(AppTheme.divider, lineWidth: 1)
+                            )
                     }
                 }
             }
-            // Use NavigationStack value-based navigation for deep linking
             .navigationDestination(for: Book.self) { book in
                 BookDetailView(book: book)
             }
@@ -117,11 +102,126 @@ struct HomeView: View {
                 AddBookView()
             }
         }
+        .tint(AppTheme.primary) // Gold tint for the search cursor & cancel button
+    }
+
+    // MARK: - Genre Filter Chips
+
+    /// Horizontal scrollable genre chips for filtering books
+    private var genreFilter: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                // "All" chip
+                genreChip(label: "All", isSelected: selectedGenreFilter == nil) {
+                    selectedGenreFilter = nil
+                }
+
+                // One chip per genre that exists in the user's library
+                ForEach(availableGenres, id: \.self) { genre in
+                    genreChip(label: genre.rawValue, isSelected: selectedGenreFilter == genre) {
+                        selectedGenreFilter = genre
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.pagePadding)
+        }
+    }
+
+    /// A single genre chip button
+    private func genreChip(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .font(.footnote.weight(.medium))
+                .foregroundStyle(isSelected ? AppTheme.textPrimary : AppTheme.textSecondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(isSelected ? AppTheme.primary.opacity(0.2) : AppTheme.cardFill)
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(isSelected ? AppTheme.primary.opacity(0.4) : AppTheme.divider, lineWidth: 1)
+                )
+        }
+    }
+
+    // MARK: - Populated Content
+
+    /// Scrollable content: Recent Note, Genre filter + 2-column Book grid
+    private var populatedContent: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+
+                // ── Subtitle ──
+                Text("Recall what matters from every book.")
+                    .font(.callout)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .padding(.horizontal, AppTheme.pagePadding)
+
+                // ── Recent Note ──
+                if let recentNote = notes.first {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Recent Note")
+                            .font(.title3.bold())
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .padding(.horizontal, AppTheme.pagePadding)
+
+                        NavigationLink(value: recentNote) {
+                            RecentNoteCard(note: recentNote)
+                                .padding(.horizontal, AppTheme.pagePadding)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                // ── Books Section ──
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("Books")
+                        .font(.title3.bold())
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.horizontal, AppTheme.pagePadding)
+
+                    // Genre filter chips
+                    genreFilter
+
+                    // 2-column grid — filtered results
+                    let columns = [
+                        GridItem(.flexible(), spacing: 16),
+                        GridItem(.flexible(), spacing: 16)
+                    ]
+
+                    if filteredBooks.isEmpty {
+                        // No results state
+                        VStack(spacing: 10) {
+                            Image(systemName: "book.closed")
+                                .font(.title)
+                                .foregroundStyle(AppTheme.primary.opacity(0.4))
+                            Text("No books match your search.")
+                                .font(.callout)
+                                .foregroundStyle(AppTheme.textSecondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 40)
+                    } else {
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(filteredBooks) { book in
+                                NavigationLink(value: book) {
+                                    BookCard(book: book)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal, AppTheme.pagePadding)
+                    }
+                }
+
+                Spacer(minLength: 60)
+            }
+        }
     }
 }
 
 #Preview {
     HomeView()
         .modelContainer(for: [Book.self, Note.self], inMemory: true)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
 }

@@ -2,94 +2,77 @@
 //  NoteDetailView.swift
 //  New_Recard
 //
-//  Full screen detail view for a reading note.
+//  Full-screen read-only view of a single Cornell-method note.
 //
 
 import SwiftUI
 import SwiftData
 
-/// Detailed view for a single Note. (Screen 6)
-/// Displays the full text of Cues, Notes, and Summary.
+/// Displays the full Cues, Notes, and Summary content of a note.
+/// Provides Edit / Delete via a toolbar menu.
 struct NoteDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    // The note to display
+
+    /// The note being viewed
     @Bindable var note: Note
-    
+
     @State private var showingEditNote = false
     @State private var showingDeleteAlert = false
-    
+
     var body: some View {
         ZStack {
-            AppTheme.backgroundPrimary.ignoresSafeArea()
-            
-            ScrollView {
+            Color(UIColor.systemBackground)
+                .overlay(AppTheme.backgroundPrimary)
+                .ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 32) {
-                    
-                    // Cues Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Cues")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text("Lorem ipsum dolor sit amet")
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        Text(note.cues)
-                            .font(.body)
-                            .foregroundStyle(AppTheme.textPrimary)
-                    }
-                    
-                    // Notes Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Notes")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text("Lorem ipsum dolor sit amet")
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        Text(note.content)
-                            .font(.body)
-                            .foregroundStyle(AppTheme.textPrimary)
-                    }
-                    
-                    // Summary Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Summary")
-                            .font(.headline)
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text("Lorem ipsum dolor sit amet")
-                            .font(.caption)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        Text(note.summary)
-                            .font(.body)
-                            .foregroundStyle(AppTheme.textPrimary)
-                    }
-                    
-                    Spacer()
+
+                    // ── Cues Section ──
+                    noteSection(
+                        title: "Cues",
+                        hint: "Key questions or trigger words",
+                        content: note.cues
+                    )
+
+                    // ── Notes Section ──
+                    noteSection(
+                        title: "Notes",
+                        hint: "Reading highlights and observations",
+                        content: note.content
+                    )
+
+                    // ── Summary Section ──
+                    noteSection(
+                        title: "Summary",
+                        hint: "Core takeaway from this reading",
+                        content: note.summary
+                    )
+
+                    Spacer(minLength: 40)
                 }
-                .padding()
+                .padding(AppTheme.pagePadding)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button {
-                        showingEditNote = true
-                    } label: {
+                    Button { showingEditNote = true } label: {
                         Label("Edit", systemImage: "pencil")
                     }
-                    
-                    Button(role: .destructive) {
-                        showingDeleteAlert = true
-                    } label: {
+                    Button(role: .destructive) { showingDeleteAlert = true } label: {
                         Label("Delete", systemImage: "trash")
-                            .foregroundStyle(AppTheme.destructive)
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle.fill")
-                        .foregroundStyle(AppTheme.textPrimary, AppTheme.backgroundSecondary)
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .frame(width: 36, height: 36)
+                        .background(Color.white.overlay(AppTheme.backgroundPrimary))
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                 }
             }
         }
@@ -98,14 +81,44 @@ struct NoteDetailView: View {
         }
         .alert("Delete Note", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("Delete", role: .destructive) {
-                deleteNote()
-            }
+            Button("Delete", role: .destructive) { deleteNote() }
         } message: {
-            Text("Are you sure you want to delete this note?")
+            Text("This note will be permanently removed. This action cannot be undone.")
         }
     }
-    
+
+    // MARK: - Section Builder
+
+    /// Reusable section displaying a label, hint, and the note content inside a tinted card
+    private func noteSection(title: String, hint: String, content: String) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Section header
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.title3.bold())
+                    .foregroundStyle(AppTheme.textPrimary)
+                Text(hint)
+                    .font(.footnote)
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+
+            // Content card with gold tint
+            Text(content.isEmpty ? "—" : content)
+                .font(.body)
+                .foregroundStyle(content.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
+                .lineSpacing(5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(AppTheme.cardFill)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
+                        .stroke(AppTheme.divider, lineWidth: 1)
+                )
+        }
+    }
+
+    /// Deletes the note and pops navigation
     private func deleteNote() {
         modelContext.delete(note)
         dismiss()

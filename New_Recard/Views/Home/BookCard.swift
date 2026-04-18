@@ -2,58 +2,92 @@
 //  BookCard.swift
 //  New_Recard
 //
-//  Card component for the horizontal book gallery on the home screen.
+//  Vertical card for the 2-column book grid on the home screen.
+//  Shows cover image on top (portrait orientation) with title and author below.
 //
 
 import SwiftUI
 
-/// Compact card displaying a book's cover and title in the home gallery.
-/// Tapping navigates to BookDetailView via NavigationLink in the parent.
+/// Displays a book's cover image, title, and author in a vertical card layout.
+/// Used inside a 2-column LazyVGrid on the home screen.
 struct BookCard: View {
     /// The book to display
     let book: Book
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Cover image or placeholder thumbnail
+        VStack(spacing: 0) {
+            // ── Cover Image (portrait, top area) ──
             coverImage
 
-            // Book title below the cover
-            Text(book.title)
-                .font(.caption)
-                .foregroundStyle(AppTheme.textPrimary)
-                .lineLimit(1)
+            // ── Title & Author (centered, bottom area) ──
+            VStack(spacing: 4) {
+                Text(book.title)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+
+                Text(book.author)
+                    .font(.caption)
+                    .foregroundStyle(AppTheme.textSecondary)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 12)
         }
-        .frame(width: 120)
+        .background(AppTheme.cardFill)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
+                .stroke(AppTheme.divider, lineWidth: 1)
+        )
     }
 
-    /// Renders the book cover image or a placeholder icon
+    /// Renders the cover image in portrait orientation, or a tinted placeholder
     @ViewBuilder
     private var coverImage: some View {
-        RoundedRectangle(cornerRadius: 8)
-            .fill(AppTheme.backgroundSecondary)
-            .frame(width: 120, height: 90)
-            .overlay {
+        GeometryReader { geo in
+            ZStack {
+                // Gold-tinted placeholder background
+                Rectangle()
+                    .fill(AppTheme.cardFill)
+
                 if let imageData = book.coverImageData,
                    let uiImage = UIImage(data: imageData) {
-                    // Display saved cover image
+                    // Saved cover image — fill the portrait frame
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
                 } else {
-                    // Placeholder icon when no cover is set
-                    Image(systemName: "photo")
-                        .font(.title2)
-                        .foregroundStyle(AppTheme.textSecondary)
+                    // Placeholder icon
+                    Image(systemName: "text.book.closed.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(AppTheme.primary.opacity(0.4))
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        // Portrait aspect ratio (3:4) — taller than wide, matching the mid-fid
+        .aspectRatio(3.0 / 4.0, contentMode: .fit)
+        .clipShape(
+            UnevenRoundedRectangle(
+                topLeadingRadius: AppTheme.cornerRadius,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: AppTheme.cornerRadius
+            )
+        )
     }
 }
 
 #Preview {
-    BookCard(book: Book(title: "Atomic Habits", author: "James Clear"))
-        .padding()
-        .background(AppTheme.backgroundPrimary)
-        .preferredColorScheme(.dark)
+    LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible())]) {
+        BookCard(book: Book(title: "Atomic Habits", author: "James Clear"))
+        BookCard(book: Book(title: "Factfulness", author: "Hans Rosling"))
+    }
+    .padding(AppTheme.pagePadding)
+    .background(Color(UIColor.systemBackground).overlay(AppTheme.backgroundPrimary))
+    .preferredColorScheme(.light)
 }
