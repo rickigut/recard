@@ -28,28 +28,33 @@ struct SplashScreenView: View {
 
     var body: some View {
         ZStack {
-            // Background — clean white with subtle gold wash
-            Color(UIColor.systemBackground)
-                .overlay(AppTheme.backgroundPrimary)
+            // Background
+            AppTheme.surfaceWhite
                 .ignoresSafeArea()
 
-            VStack(spacing: 28) {
+            VStack(spacing: 0) {
                 Spacer()
                 // ── Animated Logo ──
-                    // Logo from assets
-                    Image("recard_nbg_small")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 256, height: 256)
-                
-                .scaleEffect(logoScale)
-                .opacity(logoOpacity)
+                // Logo from assets
+                Image("recard_nbg_small")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 256, height: 256)
+                    .padding(.bottom, -32) // Reduce gap to text
+                    .scaleEffect(logoScale)
+                    .opacity(logoOpacity)
 
-                // ── Brand Name ──
-                Text("Recard")
-                    .font(.title.bold())
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .opacity(textOpacity)
+                // ── Brand Name & Jargon ──
+                VStack(spacing: 8) {
+                    Text("Recard")
+                        .font(.title.bold())
+                        .foregroundStyle(AppTheme.textPrimary)
+                    
+                    Text("Remember what matters.")
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.textSecondary)
+                }
+                .opacity(textOpacity)
 
                 Spacer()
                 Spacer()

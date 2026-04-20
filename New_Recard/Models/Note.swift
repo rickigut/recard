@@ -21,16 +21,20 @@ final class Note {
     /// Brief summary of the note's key takeaways
     var summary: String
 
+    /// The page number in the book this note references
+    var pageNumber: Int
+
     /// Timestamp when the note was created
     var dateCreated: Date
 
     /// The book this note belongs to (inverse of Book.notes)
     var book: Book?
 
-    init(cues: String, content: String, summary: String, dateCreated: Date = .now, book: Book? = nil) {
+    init(cues: String, content: String, summary: String, pageNumber: Int = 0, dateCreated: Date = .now, book: Book? = nil) {
         self.cues = cues
         self.content = content
         self.summary = summary
+        self.pageNumber = pageNumber
         self.dateCreated = dateCreated
         self.book = book
     }

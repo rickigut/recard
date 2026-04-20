@@ -2,19 +2,18 @@
 //  NoteDetailView.swift
 //  New_Recard
 //
-//  Full-screen read-only view of a single Cornell-method note.
+//  Detail view for a single note showing Keyword and Notes content.
 //
 
 import SwiftUI
 import SwiftData
 
-/// Displays the full Cues, Notes, and Summary content of a note.
-/// Provides Edit / Delete via a toolbar menu.
+/// Shows the full content of a single note.
 struct NoteDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    /// The note being viewed
+    /// The note being displayed
     @Bindable var note: Note
 
     @State private var showingEditNote = false
@@ -22,56 +21,59 @@ struct NoteDetailView: View {
 
     var body: some View {
         ZStack {
-            Color(UIColor.systemBackground)
-                .overlay(AppTheme.backgroundPrimary)
+            // White canvas for reading/writing
+            AppTheme.surfaceWhite
                 .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 32) {
+                VStack(alignment: .leading, spacing: 20) {
+                    
+                    // ── Header / Keyword ──
+                    Text(note.cues.isEmpty ? "Untitled Note" : note.cues)
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.top, 16)
 
-                    // ── Cues Section ──
-                    noteSection(
-                        title: "Cues",
-                        hint: "Key questions or trigger words",
-                        content: note.cues
-                    )
+                    // ── Metadata ──
+                    HStack(spacing: 16) {
+                        Label(smartDateString(for: note.dateCreated), systemImage: "calendar")
+                        
+                        if note.pageNumber > 0 {
+                            Label("Page \(note.pageNumber)", systemImage: "book.pages")
+                        }
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(AppTheme.iconSecondary)
+                    
+                    Divider()
+                        .padding(.vertical, 8)
 
-                    // ── Notes Section ──
-                    noteSection(
-                        title: "Notes",
-                        hint: "Reading highlights and observations",
-                        content: note.content
-                    )
+                    // ── Content ──
+                    Text(note.content.isEmpty ? "No content added yet." : note.content)
+                        .font(.system(size: 18, weight: .regular, design: .default))
+                        .foregroundStyle(note.content.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
+                        .lineSpacing(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // ── Summary Section ──
-                    noteSection(
-                        title: "Summary",
-                        hint: "Core takeaway from this reading",
-                        content: note.summary
-                    )
-
-                    Spacer(minLength: 40)
+                    Spacer(minLength: 60)
                 }
-                .padding(AppTheme.pagePadding)
+                .padding(.horizontal, AppTheme.pagePadding)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    // Edit — black icon and text
                     Button { showingEditNote = true } label: {
                         Label("Edit", systemImage: "pencil")
                     }
-                    .tint(.primary)
 
-                    // Delete — red icon and text
                     Button(role: .destructive) { showingDeleteAlert = true } label: {
                         Label("Delete", systemImage: "trash")
+                            .foregroundStyle(Color.red)
                     }
                     .tint(.red)
                 } label: {
-                    // Ellipsis icon only — no circular background
                     Image(systemName: "ellipsis")
                         .font(.body.weight(.semibold))
                         .foregroundStyle(AppTheme.textPrimary)
@@ -90,38 +92,27 @@ struct NoteDetailView: View {
         .tint(.primary)
     }
 
-    // MARK: - Section Builder
+    // MARK: - Smart Date Formatting
 
-    /// Reusable section displaying a label, hint, and the note content inside a tinted card
-    private func noteSection(title: String, hint: String, content: String) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            // Section header
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.title3.bold())
-                    .foregroundStyle(AppTheme.textPrimary)
-                Text(hint)
-                    .font(.footnote)
-                    .foregroundStyle(AppTheme.textSecondary)
-            }
+    private func smartDateString(for date: Date) -> String {
+        let calendar = Calendar.current
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH.mm"
+        let timeString = timeFormatter.string(from: date)
 
-            // Content card with gold tint
-            Text(content.isEmpty ? "—" : content)
-                .font(.body)
-                .foregroundStyle(content.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
-                .lineSpacing(5)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(AppTheme.cardFill)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
-                        .stroke(AppTheme.divider, lineWidth: 1)
-                )
+        if calendar.isDateInToday(date) {
+            return "Today, \(timeString)"
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday, \(timeString)"
+        } else {
+            let dayFormatter = DateFormatter()
+            dayFormatter.dateFormat = "EEE, d MMM"
+            return "\(dayFormatter.string(from: date)) at \(timeString)"
         }
     }
 
-    /// Deletes the note and pops navigation
+    // MARK: - Actions
+
     private func deleteNote() {
         modelContext.delete(note)
         dismiss()

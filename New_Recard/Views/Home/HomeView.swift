@@ -2,89 +2,71 @@
 //  HomeView.swift
 //  New_Recard
 //
-//  Root screen of the app. Uses Apple's native .searchable modifier
-//  and NavigationStack for HIG-compliant search and navigation.
+//  Root screen of the app. Custom hi-fi layout with branded header,
+//  search bar at bottom, and vertically-scrollable book list.
+//  Strictly follows Apple HIG with squircle corners and clean typography.
 //
 
 import SwiftUI
 import SwiftData
 
-/// Root view — switches between empty and populated states
-/// while keeping the header and "+" button always visible.
+/// Root view — custom header, empty/populated states, bottom search bar.
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
 
     /// All books, newest first
     @Query(sort: \Book.dateAdded, order: .reverse) private var books: [Book]
 
-    /// All notes, newest first — only `.first` is used for the Recent Note
+    /// All notes, newest first — `.first` is the Recent Note
     @Query(sort: \Note.dateCreated, order: .reverse) private var notes: [Note]
 
-    /// Controls the Add Book sheet presentation
+    /// Controls the Add Book & Note sheet
     @State private var showingAddBook = false
 
-    /// Search text bound to Apple's native .searchable
+    /// Search text
     @State private var searchText: String = ""
 
-    /// Currently selected genre filter — nil means "All"
-    @State private var selectedGenreFilter: BookGenre? = nil
+    /// Programmatic navigation path
+    @State private var navigationPath = NavigationPath()
 
-    /// Filtered books based on search text and genre selection
+    /// Books filtered by search
     private var filteredBooks: [Book] {
-        books.filter { book in
-            // Search filter: match title (case-insensitive)
-            let matchesSearch = searchText.isEmpty ||
-                book.title.localizedCaseInsensitiveContains(searchText)
-
-            // Genre filter: match selected genre or show all
-            let matchesGenre = selectedGenreFilter == nil ||
-                book.genre == selectedGenreFilter
-
-            return matchesSearch && matchesGenre
+        if searchText.isEmpty { return books }
+        return books.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText)
         }
     }
 
-    /// Genres that actually appear in the user's book collection
-    private var availableGenres: [BookGenre] {
-        let genreSet = Set(books.map { $0.genre })
-        return BookGenre.allCases.filter { genreSet.contains($0) }
-    }
-
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
-                // Full-screen gold-tinted canvas
-                Color(UIColor.systemBackground)
-                    .overlay(AppTheme.backgroundPrimary)
+                // Base background — SystemSecondaryBackground (#F2F2F7)
+                AppTheme.backgroundBase
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    // ── Custom Header ──
+                    header
+                        .padding(.horizontal, AppTheme.pagePadding)
+                        .padding(.top, 8)
+                        .padding(.bottom, 16)
+
+                    // ── Content ──
                     if books.isEmpty {
-                        // ── Empty State ──
                         Spacer()
                         EmptyStateView { showingAddBook = true }
                         Spacer()
-                        Spacer()
                     } else {
-                        // ── Populated Content ──
                         populatedContent
                     }
+
+                    // ── Bottom Search Bar ──
+                    searchBar
+                        .padding(.horizontal, AppTheme.pagePadding)
+                        .padding(.bottom, 8)
                 }
             }
-            // HIG: Large title for the brand name
-            .navigationTitle("Recard")
-            // HIG: Native .searchable with bottom placement
-            .searchable(text: $searchText, placement: .automatic, prompt: "Search books…")
-            .toolbar {
-                // "+" button — icon only, no circular background
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingAddBook = true } label: {
-                        Image(systemName: "plus")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                    }
-                }
-            }
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Book.self) { book in
                 BookDetailView(book: book)
             }
@@ -95,120 +77,219 @@ struct HomeView: View {
                 AddBookView()
             }
         }
-        .tint(AppTheme.primary) // Gold tint for the search cursor & cancel button
     }
 
-    // MARK: - Genre Filter Chips
+    // MARK: - Header
 
-    /// Horizontal scrollable genre chips for filtering books
-    private var genreFilter: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                // "All" chip
-                genreChip(label: "All", isSelected: selectedGenreFilter == nil) {
-                    selectedGenreFilter = nil
-                }
+    /// Branded header — "Recard" large title + circular "+" button
+    private var header: some View {
+        HStack(alignment: .top) {
+            Text("My Notes")
+                .font(.largeTitle.bold())
+                .foregroundStyle(AppTheme.textPrimary)
 
-                // One chip per genre that exists in the user's library
-                ForEach(availableGenres, id: \.self) { genre in
-                    genreChip(label: genre.rawValue, isSelected: selectedGenreFilter == genre) {
-                        selectedGenreFilter = genre
-                    }
+            Spacer()
+
+            // Circular "+" button with thin border
+            Button { showingAddBook = true } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(AppTheme.textPrimary)
+                    .frame(width: 40, height: 40)
+                    .background(AppTheme.surfaceWhite)
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(AppTheme.borderThin, lineWidth: 0.5)
+                    )
+            }
+        }
+    }
+
+    // MARK: - Bottom Search Bar
+
+    /// Search bar pinned at the bottom of the screen
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .font(.body)
+                .foregroundStyle(AppTheme.textSecondary)
+
+            TextField("Search books...", text: $searchText)
+                .font(.body)
+                .foregroundStyle(AppTheme.textPrimary)
+                .tint(AppTheme.primary)
+
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.body)
+                        .foregroundStyle(AppTheme.textSecondary)
                 }
             }
-            .padding(.horizontal, AppTheme.pagePadding)
         }
-    }
-
-    /// A single genre chip button
-    private func genreChip(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(isSelected ? AppTheme.textPrimary : AppTheme.textSecondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(isSelected ? AppTheme.primary.opacity(0.2) : AppTheme.cardFill)
-                .clipShape(Capsule())
-                .overlay(
-                    Capsule()
-                        .stroke(isSelected ? AppTheme.primary.opacity(0.4) : AppTheme.divider, lineWidth: 1)
-                )
-        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(AppTheme.surfaceWhite)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                .stroke(AppTheme.borderThin, lineWidth: 0.5)
+        )
     }
 
     // MARK: - Populated Content
 
-    /// Scrollable content: Recent Note, Genre filter + 2-column Book grid
+    /// Scrollable content: Recent Note card + Books list
     private var populatedContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
-
-                // ── Subtitle ──
-                Text("Recall what matters from every book.")
-                    .font(.callout)
-                    .foregroundStyle(AppTheme.textSecondary)
-                    .padding(.horizontal, AppTheme.pagePadding)
 
                 // ── Recent Note ──
                 if let recentNote = notes.first {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Note")
-                            .font(.title3.bold())
+                            .font(.title2.bold())
                             .foregroundStyle(AppTheme.textPrimary)
                             .padding(.horizontal, AppTheme.pagePadding)
 
-                        NavigationLink(value: recentNote) {
-                            RecentNoteCard(note: recentNote)
-                                .padding(.horizontal, AppTheme.pagePadding)
+                        Button {
+                            navigationPath.append(recentNote)
+                        } label: {
+                            HStack(spacing: 14) {
+                                // Gray accent bar
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 4)
+
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text(recentNote.cues.isEmpty ? "Untitled" : recentNote.cues)
+                                        .font(.callout.weight(.semibold))
+                                        .foregroundStyle(AppTheme.textPrimary)
+
+                                    if !recentNote.content.isEmpty {
+                                        Text(recentNote.content)
+                                            .font(.subheadline)
+                                            .foregroundStyle(AppTheme.textPrimary.opacity(0.8))
+                                            .lineLimit(2)
+                                    }
+
+                                    Text(smartDateString(for: recentNote.dateCreated) + (recentNote.pageNumber > 0 ? "  •  Page \(recentNote.pageNumber)" : ""))
+                                        .font(.caption)
+                                        .foregroundStyle(AppTheme.textSecondary)
+                                        .italic()
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(AppTheme.iconSecondary)
+                            }
+                            .padding(16)
+                            .background(AppTheme.surfaceWhite)
+                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                                    .stroke(AppTheme.borderThin, lineWidth: 0.5)
+                            )
                         }
                         .buttonStyle(.plain)
+                        .padding(.horizontal, AppTheme.pagePadding)
                     }
                 }
 
-                // ── Books Section ──
-                VStack(alignment: .leading, spacing: 14) {
+                // ── Books ──
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Books")
-                        .font(.title3.bold())
+                        .font(.title2.bold())
                         .foregroundStyle(AppTheme.textPrimary)
                         .padding(.horizontal, AppTheme.pagePadding)
 
-                    // Genre filter chips
-                    genreFilter
+                    // White card container for the book list
+                    VStack(spacing: 0) {
+                        ForEach(Array(filteredBooks.enumerated()), id: \.element.id) { index, book in
+                            Button {
+                                navigationPath.append(book)
+                            } label: {
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(book.title)
+                                            .font(.callout.weight(.medium))
+                                            .foregroundStyle(AppTheme.textPrimary)
 
-                    // 2-column grid — filtered results
-                    let columns = [
-                        GridItem(.flexible(), spacing: 16),
-                        GridItem(.flexible(), spacing: 16)
-                    ]
+                                        Text("\(book.notes.count) notes")
+                                            .font(.footnote)
+                                            .foregroundStyle(AppTheme.textSecondary)
+                                    }
 
-                    if filteredBooks.isEmpty {
-                        // No results state
+                                    Spacer()
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(AppTheme.iconSecondary)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+
+                            // Separator between rows (not after last)
+                            if index < filteredBooks.count - 1 {
+                                Divider()
+                                    .padding(.leading, 16)
+                            }
+                        }
+                    }
+                    .background(AppTheme.surfaceWhite)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                            .stroke(AppTheme.borderThin, lineWidth: 0.5)
+                    )
+                    .padding(.horizontal, AppTheme.pagePadding)
+
+                    // Empty search state
+                    if !searchText.isEmpty && filteredBooks.isEmpty {
                         VStack(spacing: 10) {
                             Image(systemName: "book.closed")
                                 .font(.title)
-                                .foregroundStyle(AppTheme.primary.opacity(0.4))
+                                .foregroundStyle(AppTheme.iconSecondary)
                             Text("No books match your search.")
-                                .font(.callout)
+                                .font(.subheadline)
                                 .foregroundStyle(AppTheme.textSecondary)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 40)
-                    } else {
-                        LazyVGrid(columns: columns, spacing: 16) {
-                            ForEach(filteredBooks) { book in
-                                NavigationLink(value: book) {
-                                    BookCard(book: book)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(.horizontal, AppTheme.pagePadding)
                     }
                 }
 
-                Spacer(minLength: 60)
+                Spacer(minLength: 20)
             }
+            .padding(.top, 8)
+        }
+    }
+
+    // MARK: - Smart Date Formatting
+
+    /// Returns "Today, 22.30", "Yesterday, 14.00", or "Mon, 20 Apr at 22.30"
+    private func smartDateString(for date: Date) -> String {
+        let calendar = Calendar.current
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH.mm"
+        let timeString = timeFormatter.string(from: date)
+
+        if calendar.isDateInToday(date) {
+            return "Today, \(timeString)"
+        } else if calendar.isDateInYesterday(date) {
+            return "Yesterday, \(timeString)"
+        } else {
+            let dayFormatter = DateFormatter()
+            dayFormatter.dateFormat = "EEE, d MMM"
+            return "\(dayFormatter.string(from: date)) at \(timeString)"
         }
     }
 }

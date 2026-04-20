@@ -3,53 +3,53 @@
 //  New_Recard
 //
 //  Empty state shown when the user's library has no books yet.
-//  Encourages the first action with a friendly prompt.
+//  Symmetrical, centered layout with outline icon and minimal instruction text.
 //
 
 import SwiftUI
 
-/// Full-height empty state with an icon and CTA button.
+/// Full-height empty state with an icon, instructional text, and CTA button.
 /// Rendered inside HomeView when no books exist.
 struct EmptyStateView: View {
-    /// Triggered when the user taps "Add your first book"
+    /// Triggered when the user taps the CTA button
     var onAddBook: () -> Void
 
     var body: some View {
-        VStack(spacing: 28) {
-            // Placeholder icon container with gold tint
+        VStack(spacing: 24) {
+            // Icon container — squircle with subtle fill
             RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
-                .fill(AppTheme.cardFill)
-                .frame(width: 140, height: 180)
+                .fill(Color.gray.opacity(0.1))
+                .frame(width: 160, height: 180)
                 .overlay {
                     Image(systemName: "books.vertical.fill")
-                        .font(.system(size: 48))
-                        .foregroundStyle(AppTheme.primary.opacity(0.6))
+                        .font(.system(size: 52))
+                        .foregroundStyle(AppTheme.iconSecondary.opacity(0.5))
                 }
 
-            // Encouraging subtitle
+            // Instruction text — minimalist
             Text("Your reading highlights live here.\nAdd a book to get started.")
-                .font(.callout)
+                .font(.subheadline)
                 .foregroundStyle(AppTheme.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
 
-            // Primary CTA button
+            // Primary CTA button — #FAD100
             Button(action: onAddBook) {
                 Text("Add your first book")
                     .font(.headline)
                     .foregroundStyle(AppTheme.textPrimary)
-                    .frame(width: 200, height: 50)
+                    .padding(.horizontal, 32)
+                    .frame(height: 50)
                     .background(AppTheme.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 25))
+                    .clipShape(Capsule())
             }
         }
-        .padding(.horizontal, AppTheme.pagePadding)
     }
 }
 
 #Preview {
     EmptyStateView(onAddBook: {})
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(UIColor.systemBackground).overlay(AppTheme.backgroundPrimary))
+        .background(AppTheme.backgroundBase)
         .preferredColorScheme(.light)
 }

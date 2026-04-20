@@ -38,20 +38,19 @@ struct OnboardingView: View {
         OnboardingPage(
             icon: "highlighter",
             title: "Capture Key Insights",
-            description: "Use the Cornell method to jot down cues, notes, and summaries. Never lose a brilliant idea from your reading again."
+            description: "Capture key ideas, reflect on what matters, and keep your insights organized-all in one place."
         ),
         OnboardingPage(
             icon: "rectangle.on.rectangle.angled",
-            title: "Recall with Widgets",
-            description: "Your reading highlights appear on your home screen widget, helping you remember what matters — effortlessly."
+            title: "Recall Your Ideas",
+            description: "Your reading highlights stay organized and easy to revisit-so you remember what matters."
         )
     ]
 
     var body: some View {
         ZStack {
             // Background
-            Color(UIColor.systemBackground)
-                .overlay(AppTheme.backgroundPrimary)
+            AppTheme.backgroundBase
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -81,19 +80,19 @@ struct OnboardingView: View {
             Spacer()
 
             // ── Illustration Area (placeholder icon) ──
-            RoundedRectangle(cornerRadius: 20)
-                .fill(AppTheme.cardFill)
+            RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                .fill(AppTheme.surfaceWhite)
                 .frame(maxWidth: .infinity)
                 .frame(height: 320)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .strokeBorder(AppTheme.primary.opacity(0.3), lineWidth: 1.5)
+                    RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                        .strokeBorder(AppTheme.borderThin, lineWidth: 0.5)
                 )
                 .overlay {
                     // SF Symbol as placeholder — user will replace with custom art later
                     Image(systemName: page.icon)
                         .font(.system(size: 64))
-                        .foregroundStyle(AppTheme.primary)
+                        .foregroundStyle(AppTheme.iconSecondary.opacity(0.5))
                 }
                 .padding(.horizontal, AppTheme.pagePadding)
 
@@ -127,7 +126,7 @@ struct OnboardingView: View {
             HStack(spacing: 8) {
                 ForEach(0..<pages.count, id: \.self) { index in
                     Circle()
-                        .fill(index == currentPage ? AppTheme.primary : AppTheme.primary.opacity(0.25))
+                        .fill(index == currentPage ? AppTheme.iconSecondary : AppTheme.iconSecondary.opacity(0.25))
                         .frame(width: 8, height: 8)
                         .animation(.easeInOut(duration: 0.2), value: currentPage)
                 }
