@@ -76,19 +76,12 @@ struct HomeView: View {
             // HIG: Native .searchable with bottom placement
             .searchable(text: $searchText, placement: .automatic, prompt: "Search books…")
             .toolbar {
-                // Circular "+" button in the top bar
+                // "+" button — icon only, no circular background
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingAddBook = true } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.title3.weight(.semibold))
                             .foregroundStyle(AppTheme.textPrimary)
-                            .frame(width: 36, height: 36)
-                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(AppTheme.divider, lineWidth: 1)
-                            )
                     }
                 }
             }

@@ -76,29 +76,21 @@ struct AddBookView: View {
             .navigationTitle(isEditing ? "Edit Book" : "Add Book")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Cancel (X) button — circular with backgroundPrimary fill
+                // Cancel (X) — icon only
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.body.weight(.semibold))
                             .foregroundStyle(AppTheme.textPrimary)
-                            .frame(width: 36, height: 36)
-                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                     }
                 }
 
-                // Save (✓) button — circular with backgroundPrimary fill
+                // Save (✓) — icon only
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { saveBook() } label: {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.body.weight(.semibold))
                             .foregroundStyle(isFormValid ? AppTheme.primary : AppTheme.textPlaceholder)
-                            .frame(width: 36, height: 36)
-                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                     }
                     .disabled(!isFormValid)
                 }
@@ -162,7 +154,7 @@ struct AddBookView: View {
                 Text("Title")
                     .font(.footnote)
                     .foregroundStyle(AppTheme.textSecondary)
-                TextField("e.g. Atomic Habits", text: $title)
+                TextField("", text: $title)
                     .textFieldStyle(RecardTextFieldStyle())
             }
 
@@ -171,7 +163,7 @@ struct AddBookView: View {
                 Text("Author")
                     .font(.footnote)
                     .foregroundStyle(AppTheme.textSecondary)
-                TextField("e.g. James Clear", text: $author)
+                TextField("", text: $author)
                     .textFieldStyle(RecardTextFieldStyle())
             }
 

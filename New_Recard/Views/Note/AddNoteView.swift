@@ -60,7 +60,7 @@ struct AddNoteView: View {
                             title: "Cues",
                             hint: "Key questions or trigger words from this reading."
                         ) {
-                            TextField("e.g. Why do habits compound?", text: $cues)
+                            TextField("Write key questions or trigger words", text: $cues)
                                 .textFieldStyle(RecardTextFieldStyle())
                         }
 
@@ -87,29 +87,21 @@ struct AddNoteView: View {
             .navigationTitle(isEditing ? "Edit Note" : "Add Note")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Cancel — circular with backgroundPrimary fill
+                // Cancel — icon only
                 ToolbarItem(placement: .topBarLeading) {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.body.weight(.semibold))
                             .foregroundStyle(AppTheme.textPrimary)
-                            .frame(width: 36, height: 36)
-                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                     }
                 }
 
-                // Save — circular with backgroundPrimary fill
+                // Save — icon only
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { saveNote() } label: {
                         Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.body.weight(.semibold))
                             .foregroundStyle(isFormValid ? AppTheme.primary : AppTheme.textPlaceholder)
-                            .frame(width: 36, height: 36)
-                            .background(Color.white.overlay(AppTheme.backgroundPrimary))
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                     }
                     .disabled(!isFormValid)
                 }

@@ -95,20 +95,22 @@ struct BookDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
+                    // Edit — black icon and text
                     Button { showingEditBook = true } label: {
                         Label("Edit", systemImage: "pencil")
                     }
+                    .tint(.primary)
+
+                    // Delete — red icon and text
                     Button(role: .destructive) { showingDeleteAlert = true } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                    .tint(.red)
                 } label: {
+                    // Ellipsis icon only — no circular background
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundStyle(AppTheme.textPrimary)
-                        .frame(width: 36, height: 36)
-                        .background(Color.white.overlay(AppTheme.backgroundPrimary))
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(AppTheme.divider, lineWidth: 1))
                 }
             }
         }
@@ -124,6 +126,7 @@ struct BookDetailView: View {
         } message: {
             Text("Deleting \"\(book.title)\" will also remove all its notes. This action cannot be undone.")
         }
+        .tint(.primary)
     }
 
     // MARK: - Book Header

@@ -2,6 +2,11 @@
 //  New_RecardApp.swift
 //  New_Recard
 //
+//  App entry point. Manages the launch flow:
+//  1. Splash screen (every launch, animated)
+//  2. Onboarding (first launch only, persisted via @AppStorage)
+//  3. Home screen
+//
 
 import SwiftUI
 import SwiftData
@@ -24,9 +29,61 @@ struct New_RecardApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            RootView()
                 .preferredColorScheme(.light)
         }
         .modelContainer(sharedModelContainer)
+    }
+}
+
+// MARK: - Root View (Flow Controller)
+
+/// Orchestrates the app launch flow:
+/// Splash → Onboarding (if first time) → Home
+struct RootView: View {
+    /// Tracks which screen is currently showing
+    @State private var currentScreen: LaunchScreen = .splash
+
+    /// Persists whether onboarding has been completed (survives app restarts)
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
+    /// The three possible launch screens
+    enum LaunchScreen {
+        case splash
+        case onboarding
+        case home
+    }
+
+    var body: some View {
+        ZStack {
+            switch currentScreen {
+            case .splash:
+                SplashScreenView {
+                    // Splash finished → check if onboarding needed
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        if hasCompletedOnboarding {
+                            currentScreen = .home
+                        } else {
+                            currentScreen = .onboarding
+                        }
+                    }
+                }
+                .transition(.opacity)
+
+            case .onboarding:
+                OnboardingView {
+                    // Onboarding finished → mark as completed, go to home
+                    hasCompletedOnboarding = true
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        currentScreen = .home
+                    }
+                }
+                .transition(.opacity)
+
+            case .home:
+                HomeView()
+                    .transition(.opacity)
+            }
+        }
     }
 }
