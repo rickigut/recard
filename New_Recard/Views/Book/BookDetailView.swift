@@ -140,12 +140,13 @@ struct BookDetailView: View {
                 Button { showingAddNote = true } label: {
                     Text("Add note")
                         .font(.headline)
-                        .foregroundStyle(AppTheme.textPrimary)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(AppTheme.backgroundBase)
-                        .clipShape(Capsule())
+                        .foregroundStyle(AppTheme.textPrimary)
                 }
+                .tint(AppTheme.primary)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .buttonBorderShape(.capsule)
                 .padding(.horizontal, AppTheme.pagePadding)
                 .padding(.bottom, 16)
             }
@@ -185,7 +186,7 @@ struct BookDetailView: View {
         } message: {
             Text("Deleting \"\(book.title)\" will also remove all its notes. This action cannot be undone.")
         }
-        .tint(.primary)
+
     }
     
     private func deleteBook() {

@@ -146,11 +146,11 @@ struct OnboardingView: View {
             } label: {
                 Text(currentPage == pages.count - 1 ? "Start" : "Next")
                     .font(.headline)
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .frame(width: 100, height: 44)
-                    .background(AppTheme.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .frame(width: 80)
             }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .buttonBorderShape(.capsule)
         }
     }
 }

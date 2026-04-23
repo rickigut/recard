@@ -89,7 +89,7 @@ struct NoteDetailView: View {
         } message: {
             Text("This note will be permanently removed. This action cannot be undone.")
         }
-        .tint(.primary)
+
     }
     
     // MARK: - Smart Date Formatting

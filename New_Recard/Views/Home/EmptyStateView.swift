@@ -33,16 +33,16 @@ struct EmptyStateView: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
             
-            // Primary CTA button — #FAD100
+            // Primary CTA button
             Button(action: onAddBook) {
                 Text("Add your first book")
                     .font(.headline)
                     .foregroundStyle(AppTheme.textPrimary)
-                    .padding(.horizontal, 32)
-                    .frame(height: 50)
-                    .background(AppTheme.primary)
-                    .clipShape(Capsule())
             }
+            .tint(AppTheme.primary)
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .buttonBorderShape(.capsule)
         }
     }
 }

@@ -85,5 +85,6 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
+        .tint(AppTheme.primary)
     }
 }
