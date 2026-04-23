@@ -63,14 +63,14 @@ struct BookDetailView: View {
                         
                         // ── Book Title ──
                         Text(book.title)
-                            .font(.body.weight(.medium))
+                            .font(.title2.weight(.semibold))
                             .foregroundStyle(AppTheme.textPrimary)
                             .padding(.horizontal, AppTheme.pagePadding)
                             .padding(.top, 16)
                         
                         // ── Genre ──
                         Text(book.genre.rawValue)
-                            .font(.subheadline)
+                            .font(.title3)
                             .foregroundStyle(AppTheme.textSecondary)
                             .padding(.horizontal, AppTheme.pagePadding)
                             .padding(.top, 4)
