@@ -51,7 +51,7 @@ struct AddNoteView: View {
                     // ── Grouped Note Fields ──
                     VStack(alignment: .leading, spacing: 0) {
                         // Keyword
-                        TextField("Keyword", text: $keyword)
+                        TextField("Keyword...", text: $keyword)
                             .font(.body)
                             .padding(.vertical, 14)
                             .padding(.horizontal, 16)
@@ -71,7 +71,7 @@ struct AddNoteView: View {
                                 .tint(AppTheme.primary)
                             
                             if noteContent.isEmpty {
-                                Text("Notes")
+                                Text("Notes...")
                                     .font(.body)
                                     .foregroundStyle(AppTheme.textPlaceholder)
                                     .padding(.horizontal, 16)
@@ -84,7 +84,7 @@ struct AddNoteView: View {
                             .padding(.leading, 16)
                         
                         // Page (Number only)
-                        TextField("Page (Number only)", text: $pageNumberText)
+                        TextField("Page...", text: $pageNumberText)
                             .font(.body)
                             .keyboardType(.numberPad)
                             .padding(.vertical, 14)

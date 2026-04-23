@@ -70,7 +70,7 @@ struct AddBookView: View {
                     // ── Book Title + Genre (grouped container) ──
                     VStack(alignment: .leading, spacing: 0) {
                         // Book Title
-                        TextField("Book Title", text: $title)
+                        TextField("Book Title...", text: $title)
                             .font(.body)
                             .padding(.vertical, 14)
                             .padding(.horizontal, 16)
@@ -142,7 +142,7 @@ struct AddBookView: View {
     private var noteFieldsSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Keyword
-            TextField("Keyword", text: $keyword)
+            TextField("Keyword...", text: $keyword)
                 .font(.body)
                 .padding(.vertical, 14)
                 .padding(.horizontal, 16)
@@ -162,7 +162,7 @@ struct AddBookView: View {
                     .tint(AppTheme.primary)
                 
                 if noteContent.isEmpty {
-                    Text("Notes")
+                    Text("Notes...")
                         .font(.body)
                         .foregroundStyle(AppTheme.textPlaceholder)
                         .padding(.horizontal, 16)
@@ -175,7 +175,7 @@ struct AddBookView: View {
                 .padding(.leading, 16)
             
             // Page (Number only)
-            TextField("Page (Number only)", text: $pageNumberText)
+            TextField("Page...", text: $pageNumberText)
                 .font(.body)
                 .keyboardType(.numberPad)
                 .padding(.vertical, 14)
