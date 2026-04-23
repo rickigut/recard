@@ -147,7 +147,9 @@ struct OnboardingView: View {
                 Text(currentPage == pages.count - 1 ? "Start" : "Next")
                     .font(.headline)
                     .frame(width: 80)
+                    .foregroundStyle(Color.black)
             }
+            .tint(AppTheme.primary)
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .buttonBorderShape(.capsule)
