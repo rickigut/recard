@@ -225,6 +225,7 @@ struct AddBookView: View {
                 showingPhotoPicker = true
             }
         }
+        .tint(.black)
         .photosPicker(isPresented: $showingPhotoPicker, selection: $selectedPhotoItem, matching: .images)
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
