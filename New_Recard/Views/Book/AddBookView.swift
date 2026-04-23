@@ -20,6 +20,7 @@ struct AddBookView: View {
     
     // Book state
     @State private var title: String = ""
+    @State private var selectedGenre: BookGenre = .selfHelp
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var coverImageData: Data? = nil
     
@@ -47,6 +48,7 @@ struct AddBookView: View {
         self.bookToEdit = bookToEdit
         if let book = bookToEdit {
             _title = State(initialValue: book.title)
+            _selectedGenre = State(initialValue: book.genre)
             _coverImageData = State(initialValue: book.coverImageData)
         }
     }
@@ -55,87 +57,46 @@ struct AddBookView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: 20) {
                     
-                    // ── Cover + Book Title ──
-                    HStack(alignment: .top, spacing: 20) {
-                        coverPicker
+                    // ── Full-width Cover Image ──
+                    coverPicker
+                    
+                    // ── Book Title + Genre (grouped container) ──
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Book Title
+                        TextField("Book Title", text: $title)
+                            .font(.body)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
                         
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Book Title")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(.primary)
-                            TextField("Input title...", text: $title)
-                                .textFieldStyle(RecardTextFieldStyle())
+                        Divider()
+                            .padding(.leading, 16)
+                        
+                        // Genre Picker
+                        HStack {
+                            Picker("Genre", selection: $selectedGenre) {
+                                ForEach(BookGenre.nonFictionGenres, id: \.self) { genre in
+                                    Text(genre.rawValue).tag(genre)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .tint(AppTheme.textSecondary)
+                            
+                            Spacer()
                         }
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 4)
                     }
+                    .background(AppTheme.backgroundBase)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
                     
                     // Divider
                     Divider()
                     
                     // ── First Note Fields (Only when creating a new book) ──
                     if !isEditing {
-                        VStack(alignment: .leading, spacing: 24) {
-                            // Keyword field
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Keyword?")
-                                    .font(.body.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                Text("What is the main idea or concept?")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                
-                                TextField("Input keyword...", text: $keyword)
-                                    .textFieldStyle(RecardTextFieldStyle())
-                            }
-                            
-                            // Page field (numbers only)
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Page")
-                                    .font(.body.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                Text("Page number reference.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                
-                                TextField("Input page number...", text: $pageNumberText)
-                                    .textFieldStyle(RecardTextFieldStyle())
-                                    .keyboardType(.numberPad)
-                                    .onChange(of: pageNumberText) { _, newValue in
-                                        pageNumberText = newValue.filter { $0.isNumber }
-                                    }
-                            }
-                            
-                            // Notes field
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Notes")
-                                    .font(.body.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                Text("Write down your key takeaways and thoughts.")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                
-                                ZStack(alignment: .topLeading) {
-                                    // Gray background text editor
-                                    TextEditor(text: $noteContent)
-                                        .frame(minHeight: 150)
-                                        .padding(10)
-                                        .scrollContentBackground(.hidden)
-                                        .background(AppTheme.backgroundBase)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        .tint(AppTheme.primary)
-                                    
-                                    // Placeholder
-                                    if noteContent.isEmpty {
-                                        Text("Input notes...")
-                                            .foregroundStyle(Color(UIColor.placeholderText))
-                                            .padding(.horizontal, 15)
-                                            .padding(.vertical, 18)
-                                            .allowsHitTesting(false)
-                                    }
-                                }
-                            }
-                        }
+                        noteFieldsSection
                     }
                     
                     Spacer(minLength: 40)
@@ -167,7 +128,59 @@ struct AddBookView: View {
         }
     }
     
-    // MARK: - Cover Image Picker
+    // MARK: - Note Fields Section (Keyword, Notes, Page)
+    
+    /// Grouped note input fields using native components with inline placeholders.
+    private var noteFieldsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Keyword
+            TextField("Keyword", text: $keyword)
+                .font(.body)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 16)
+            
+            Divider()
+                .padding(.leading, 16)
+            
+            // Notes — expandable TextEditor
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: $noteContent)
+                    .font(.body)
+                    .frame(minHeight: 44)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 6)
+                    .scrollContentBackground(.hidden)
+                    .tint(AppTheme.primary)
+                
+                if noteContent.isEmpty {
+                    Text("Notes")
+                        .font(.body)
+                        .foregroundStyle(AppTheme.textPlaceholder)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .allowsHitTesting(false)
+                }
+            }
+            
+            Divider()
+                .padding(.leading, 16)
+            
+            // Page (Number only)
+            TextField("Page (Number only)", text: $pageNumberText)
+                .font(.body)
+                .keyboardType(.numberPad)
+                .padding(.vertical, 14)
+                .padding(.horizontal, 16)
+                .onChange(of: pageNumberText) { _, newValue in
+                    pageNumberText = newValue.filter { $0.isNumber }
+                }
+        }
+        .background(AppTheme.backgroundBase)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
+    }
+    
+    // MARK: - Cover Image Picker (Full Width)
     
     private var coverPicker: some View {
         PhotosPicker(
@@ -178,7 +191,7 @@ struct AddBookView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
                     .fill(AppTheme.backgroundBase)
-                    .frame(width: 110, height: 150)
+                    .aspectRatio(16/9, contentMode: .fit)
                     .overlay(
                         RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
                             .strokeBorder(AppTheme.borderThin, lineWidth: 0.5)
@@ -188,14 +201,12 @@ struct AddBookView: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 110, height: 150)
+                        .aspectRatio(16/9, contentMode: .fit)
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
                 } else {
-                    VStack(spacing: 8) {
-                        Image(systemName: "photo.badge.plus")
-                            .font(.title2)
-                            .foregroundStyle(.gray)
-                    }
+                    Image(systemName: "photo.badge.plus")
+                        .font(.title2)
+                        .foregroundStyle(.gray)
                 }
             }
         }
@@ -213,9 +224,10 @@ struct AddBookView: View {
     private func saveData() {
         if let book = bookToEdit {
             book.title = title
+            book.genre = selectedGenre
             book.coverImageData = coverImageData
         } else {
-            let newBook = Book(title: title, author: "", coverImageData: coverImageData)
+            let newBook = Book(title: title, author: "", genre: selectedGenre, coverImageData: coverImageData)
             let page = Int(pageNumberText) ?? 0
             let initialNote = Note(cues: keyword, content: noteContent, summary: "", pageNumber: page, book: newBook)
             newBook.notes.append(initialNote)

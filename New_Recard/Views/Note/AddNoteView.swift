@@ -2,7 +2,7 @@
 //  AddNoteView.swift
 //  New_Recard
 //
-//  Sheet for creating or editing a note with Keyword and Notes fields.
+//  Sheet for creating or editing a note with Keyword, Notes, and Page fields.
 //
 
 import SwiftUI
@@ -48,63 +48,53 @@ struct AddNoteView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
                     
-                    // Keyword field
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Keyword?")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text("What is the main idea or concept?")
-                            .font(.footnote)
-                            .foregroundStyle(AppTheme.textSecondary)
+                    // ── Grouped Note Fields ──
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Keyword
+                        TextField("Keyword", text: $keyword)
+                            .font(.body)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
                         
-                        TextField("Input keyword...", text: $keyword)
-                            .textFieldStyle(RecardTextFieldStyle())
-                    }
-                    
-                    // Page field (numbers only)
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Page")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text("Page number reference.")
-                            .font(.footnote)
-                            .foregroundStyle(AppTheme.textSecondary)
+                        Divider()
+                            .padding(.leading, 16)
                         
-                        TextField("Input page number...", text: $pageNumberText)
-                            .textFieldStyle(RecardTextFieldStyle())
+                        // Notes — expandable TextEditor
+                        ZStack(alignment: .topLeading) {
+                            TextEditor(text: $noteContent)
+                                .font(.body)
+                                .frame(minHeight: 44)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, 11)
+                                .padding(.vertical, 6)
+                                .scrollContentBackground(.hidden)
+                                .tint(AppTheme.primary)
+                            
+                            if noteContent.isEmpty {
+                                Text("Notes")
+                                    .font(.body)
+                                    .foregroundStyle(AppTheme.textPlaceholder)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                        
+                        Divider()
+                            .padding(.leading, 16)
+                        
+                        // Page (Number only)
+                        TextField("Page (Number only)", text: $pageNumberText)
+                            .font(.body)
                             .keyboardType(.numberPad)
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
                             .onChange(of: pageNumberText) { _, newValue in
                                 pageNumberText = newValue.filter { $0.isNumber }
                             }
                     }
-                    
-                    // Notes field
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Notes")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(AppTheme.textPrimary)
-                        Text("Write down your key takeaways and thoughts.")
-                            .font(.footnote)
-                            .foregroundStyle(AppTheme.textSecondary)
-                        
-                        ZStack(alignment: .topLeading) {
-                            TextEditor(text: $noteContent)
-                                .frame(minHeight: 180)
-                                .padding(10)
-                                .scrollContentBackground(.hidden)
-                                .background(AppTheme.backgroundBase)
-                                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
-                                .tint(AppTheme.primary)
-                            
-                            if noteContent.isEmpty {
-                                Text("Input notes...")
-                                    .foregroundStyle(AppTheme.textPlaceholder)
-                                    .padding(.horizontal, 15)
-                                    .padding(.vertical, 18)
-                                    .allowsHitTesting(false)
-                            }
-                        }
-                    }
+                    .background(AppTheme.backgroundBase)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
                     
                     Spacer(minLength: 40)
                 }

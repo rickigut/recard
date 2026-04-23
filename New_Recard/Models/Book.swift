@@ -9,11 +9,10 @@ import Foundation
 import SwiftData
 
 /// Predefined book genres for the picker.
-/// Covers the most common categories a knowledge-seeking reader would use.
+/// Non-fiction genres only — fiction-related categories have been removed.
 enum BookGenre: String, CaseIterable, Codable {
     case selfHelp = "Self-Help"
     case nonFiction = "Non-Fiction"
-    case fiction = "Fiction"
     case science = "Science"
     case philosophy = "Philosophy"
     case psychology = "Psychology"
@@ -21,9 +20,12 @@ enum BookGenre: String, CaseIterable, Codable {
     case biography = "Biography"
     case history = "History"
     case technology = "Technology"
-    case fantasy = "Fantasy"
-    case mystery = "Mystery"
     case other = "Other"
+    
+    /// All non-fiction genres available for the picker
+    static var nonFictionGenres: [BookGenre] {
+        allCases
+    }
 }
 
 /// Represents a book that the user has read or is reading.

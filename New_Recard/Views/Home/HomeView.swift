@@ -29,12 +29,27 @@ struct HomeView: View {
     /// Programmatic navigation path
     @State private var navigationPath = NavigationPath()
     
-    /// Books filtered by search
+    /// Genre filter — nil means "All"
+    @State private var selectedGenreFilter: BookGenre? = nil
+    
+    /// Books filtered by search and genre
     private var filteredBooks: [Book] {
-        if searchText.isEmpty { return books }
-        return books.filter {
-            $0.title.localizedCaseInsensitiveContains(searchText)
+        var result = books
+        if let genre = selectedGenreFilter {
+            result = result.filter { $0.genre == genre }
         }
+        if !searchText.isEmpty {
+            result = result.filter {
+                $0.title.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        return result
+    }
+    
+    /// Genres that actually exist in the user's book collection
+    private var availableGenres: [BookGenre] {
+        let genreSet = Set(books.map { $0.genre })
+        return BookGenre.allCases.filter { genreSet.contains($0) }
     }
     
     var body: some View {
@@ -147,56 +162,69 @@ struct HomeView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
                 
-                // ── Recent Note ──
-                if let recentNote = notes.first {
+                // ── Recent Notes (up to 3) ──
+                if !notes.isEmpty {
+                    let recentNotes = Array(notes.prefix(3))
+                    
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Note")
                             .font(.title2.bold())
                             .foregroundStyle(AppTheme.textPrimary)
                             .padding(.horizontal, AppTheme.pagePadding)
                         
-                        Button {
-                            navigationPath.append(recentNote)
-                        } label: {
-                            HStack(spacing: 14) {
-                                // Gray accent bar
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 4)
-                                
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(recentNote.cues.isEmpty ? "Untitled" : recentNote.cues)
-                                        .font(.callout.weight(.semibold))
-                                        .foregroundStyle(AppTheme.textPrimary)
-                                    
-                                    if !recentNote.content.isEmpty {
-                                        Text(recentNote.content)
-                                            .font(.subheadline)
-                                            .foregroundStyle(AppTheme.textPrimary.opacity(0.8))
-                                            .lineLimit(2)
+                        VStack(spacing: 0) {
+                            ForEach(Array(recentNotes.enumerated()), id: \.element.id) { index, recentNote in
+                                Button {
+                                    navigationPath.append(recentNote)
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        // Gray accent bar
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(Color.gray.opacity(0.3))
+                                            .frame(width: 4)
+                                        
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            Text(recentNote.cues.isEmpty ? "Untitled" : recentNote.cues)
+                                                .font(.callout.weight(.semibold))
+                                                .foregroundStyle(AppTheme.textPrimary)
+                                            
+                                            if !recentNote.content.isEmpty {
+                                                Text(recentNote.content)
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(AppTheme.textPrimary.opacity(0.8))
+                                                    .lineLimit(2)
+                                            }
+                                            
+                                            Text(smartDateString(for: recentNote.dateCreated) + (recentNote.pageNumber > 0 ? "  •  Page \(recentNote.pageNumber)" : ""))
+                                                .font(.caption)
+                                                .foregroundStyle(AppTheme.textSecondary)
+                                                .italic()
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(AppTheme.iconSecondary)
                                     }
-                                    
-                                    Text(smartDateString(for: recentNote.dateCreated) + (recentNote.pageNumber > 0 ? "  •  Page \(recentNote.pageNumber)" : ""))
-                                        .font(.caption)
-                                        .foregroundStyle(AppTheme.textSecondary)
-                                        .italic()
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                                    .contentShape(Rectangle())
                                 }
+                                .buttonStyle(.plain)
                                 
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(AppTheme.iconSecondary)
+                                if index < recentNotes.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 36)
+                                }
                             }
-                            .padding(16)
-                            .background(AppTheme.surfaceWhite)
-                            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
-                                    .stroke(AppTheme.borderThin, lineWidth: 0.5)
-                            )
                         }
-                        .buttonStyle(.plain)
+                        .background(AppTheme.surfaceWhite)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
+                                .stroke(AppTheme.borderThin, lineWidth: 0.5)
+                        )
                         .padding(.horizontal, AppTheme.pagePadding)
                     }
                 }
@@ -207,6 +235,25 @@ struct HomeView: View {
                         .font(.title2.bold())
                         .foregroundStyle(AppTheme.textPrimary)
                         .padding(.horizontal, AppTheme.pagePadding)
+                    
+                    // Genre filter pills
+                    if !availableGenres.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                // "All" pill
+                                genreFilterPill(title: "All", isSelected: selectedGenreFilter == nil) {
+                                    selectedGenreFilter = nil
+                                }
+                                
+                                ForEach(availableGenres, id: \.self) { genre in
+                                    genreFilterPill(title: genre.rawValue, isSelected: selectedGenreFilter == genre) {
+                                        selectedGenreFilter = genre
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, AppTheme.pagePadding)
+                        }
+                    }
                     
                     // White card container for the book list
                     VStack(spacing: 0) {
@@ -291,6 +338,26 @@ struct HomeView: View {
             dayFormatter.dateFormat = "EEE, d MMM"
             return "\(dayFormatter.string(from: date)) at \(timeString)"
         }
+    }
+    
+    // MARK: - Genre Filter Pill
+    
+    /// A selectable pill button for genre filtering
+    private func genreFilterPill(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                .foregroundStyle(isSelected ? AppTheme.textPrimary : AppTheme.textSecondary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(isSelected ? AppTheme.backgroundBase : AppTheme.surfaceWhite)
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(isSelected ? AppTheme.textPrimary.opacity(0.3) : AppTheme.borderThin, lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
     }
 }
 
