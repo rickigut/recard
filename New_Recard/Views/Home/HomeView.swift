@@ -69,7 +69,7 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingAddBook = true } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: "square.and.pencil")
                             .foregroundStyle(Color.black)
                     }
                     .tint(AppTheme.primary)
