@@ -24,6 +24,11 @@ struct AddBookView: View {
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var coverImageData: Data? = nil
     
+    // Image source selection
+    @State private var showingImageSourceDialog = false
+    @State private var showingPhotoPicker = false
+    @State private var showingCamera = false
+    
     // Note state (only used when creating a new book)
     @State private var keyword: String = ""
     @State private var pageNumberText: String = ""
@@ -186,11 +191,9 @@ struct AddBookView: View {
     // MARK: - Cover Image Picker (Full Width)
     
     private var coverPicker: some View {
-        PhotosPicker(
-            selection: $selectedPhotoItem,
-            matching: .images,
-            photoLibrary: .shared()
-        ) {
+        Button {
+            showingImageSourceDialog = true
+        } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
                     .fill(AppTheme.backgroundBase)
@@ -213,12 +216,28 @@ struct AddBookView: View {
                 }
             }
         }
+        .buttonStyle(.plain)
+        .confirmationDialog("Add Cover Photo", isPresented: $showingImageSourceDialog, titleVisibility: .visible) {
+            Button("Take Photo") {
+                showingCamera = true
+            }
+            Button("Choose from Gallery") {
+                showingPhotoPicker = true
+            }
+        }
+        .photosPicker(isPresented: $showingPhotoPicker, selection: $selectedPhotoItem, matching: .images)
         .onChange(of: selectedPhotoItem) { _, newItem in
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
                     coverImageData = data
                 }
             }
+        }
+        .fullScreenCover(isPresented: $showingCamera) {
+            CameraPickerView { image in
+                coverImageData = image.jpegData(compressionQuality: 0.85)
+            }
+            .ignoresSafeArea()
         }
     }
     
@@ -240,6 +259,50 @@ struct AddBookView: View {
     }
 }
 
+// MARK: - Camera Picker (UIKit Bridge)
+
+/// A SwiftUI wrapper around UIImagePickerController configured for camera capture.
+struct CameraPickerView: UIViewControllerRepresentable {
+    @Environment(\.dismiss) private var dismiss
+    
+    /// Called with the captured image when the user takes a photo
+    var onImageCaptured: (UIImage) -> Void
+    
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.allowsEditing = true
+        picker.delegate = context.coordinator
+        return picker
+    }
+    
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: CameraPickerView
+        
+        init(parent: CameraPickerView) {
+            self.parent = parent
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            // Prefer the edited (cropped) image, fall back to original
+            if let image = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage {
+                parent.onImageCaptured(image)
+            }
+            parent.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.dismiss()
+        }
+    }
+}
+
 // MARK: - Custom TextField Style
 
 struct RecardTextFieldStyle: TextFieldStyle {
@@ -258,3 +321,4 @@ struct RecardTextFieldStyle: TextFieldStyle {
     AddBookView()
         .preferredColorScheme(.light)
 }
+
