@@ -19,14 +19,14 @@ struct New_RecardApp: App {
             Note.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         WindowGroup {
             RootView()
@@ -43,17 +43,17 @@ struct New_RecardApp: App {
 struct RootView: View {
     /// Tracks which screen is currently showing
     @State private var currentScreen: LaunchScreen = .splash
-
+    
     /// Persists whether onboarding has been completed (survives app restarts)
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-
+    
     /// The three possible launch screens
     enum LaunchScreen {
         case splash
         case onboarding
         case home
     }
-
+    
     var body: some View {
         ZStack {
             switch currentScreen {
@@ -69,7 +69,7 @@ struct RootView: View {
                     }
                 }
                 .transition(.opacity)
-
+                
             case .onboarding:
                 OnboardingView {
                     // Onboarding finished → mark as completed, go to home
@@ -79,7 +79,7 @@ struct RootView: View {
                     }
                 }
                 .transition(.opacity)
-
+                
             case .home:
                 HomeView()
                     .transition(.opacity)

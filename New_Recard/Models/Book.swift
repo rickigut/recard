@@ -32,30 +32,30 @@ enum BookGenre: String, CaseIterable, Codable {
 final class Book {
     /// The title of the book
     var title: String
-
+    
     /// The author of the book
     var author: String
-
+    
     /// The genre of the book, stored as a raw string for SwiftData compatibility
     var genreRawValue: String
-
+    
     /// Computed genre accessor
     var genre: BookGenre {
         get { BookGenre(rawValue: genreRawValue) ?? .other }
         set { genreRawValue = newValue.rawValue }
     }
-
+    
     /// Optional cover image stored as compressed JPEG data
     @Attribute(.externalStorage)
     var coverImageData: Data?
-
+    
     /// Timestamp when the book was added to the collection
     var dateAdded: Date
-
+    
     /// All notes associated with this book. Cascade-deletes when the book is removed.
     @Relationship(deleteRule: .cascade, inverse: \Note.book)
     var notes: [Note] = []
-
+    
     init(title: String, author: String, genre: BookGenre = .other, coverImageData: Data? = nil, dateAdded: Date = .now) {
         self.title = title
         self.author = author

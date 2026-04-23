@@ -13,22 +13,22 @@ import SwiftData
 /// Root view — custom header, empty/populated states, bottom search bar.
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
-
+    
     /// All books, newest first
     @Query(sort: \Book.dateAdded, order: .reverse) private var books: [Book]
-
+    
     /// All notes, newest first — `.first` is the Recent Note
     @Query(sort: \Note.dateCreated, order: .reverse) private var notes: [Note]
-
+    
     /// Controls the Add Book & Note sheet
     @State private var showingAddBook = false
-
+    
     /// Search text
     @State private var searchText: String = ""
-
+    
     /// Programmatic navigation path
     @State private var navigationPath = NavigationPath()
-
+    
     /// Books filtered by search
     private var filteredBooks: [Book] {
         if searchText.isEmpty { return books }
@@ -36,21 +36,21 @@ struct HomeView: View {
             $0.title.localizedCaseInsensitiveContains(searchText)
         }
     }
-
+    
     var body: some View {
         NavigationStack(path: $navigationPath) {
             ZStack {
                 // Base background — SystemSecondaryBackground (#F2F2F7)
                 AppTheme.backgroundBase
                     .ignoresSafeArea()
-
+                
                 VStack(spacing: 0) {
                     // ── Custom Header ──
                     header
                         .padding(.horizontal, AppTheme.pagePadding)
                         .padding(.top, 8)
                         .padding(.bottom, 16)
-
+                    
                     // ── Content ──
                     if books.isEmpty {
                         Spacer()
@@ -59,7 +59,7 @@ struct HomeView: View {
                     } else {
                         populatedContent
                     }
-
+                    
                     // ── Bottom Search Bar ──
                     searchBar
                         .padding(.horizontal, AppTheme.pagePadding)
@@ -78,18 +78,18 @@ struct HomeView: View {
             }
         }
     }
-
+    
     // MARK: - Header
-
+    
     /// Branded header — "Recard" large title + circular "+" button
     private var header: some View {
         HStack(alignment: .top) {
             Text("My Notes")
                 .font(.largeTitle.bold())
                 .foregroundStyle(AppTheme.textPrimary)
-
+            
             Spacer()
-
+            
             // Circular "+" button with thin border
             Button { showingAddBook = true } label: {
                 Image(systemName: "plus")
@@ -105,21 +105,21 @@ struct HomeView: View {
             }
         }
     }
-
+    
     // MARK: - Bottom Search Bar
-
+    
     /// Search bar pinned at the bottom of the screen
     private var searchBar: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.body)
                 .foregroundStyle(AppTheme.textSecondary)
-
+            
             TextField("Search books...", text: $searchText)
                 .font(.body)
                 .foregroundStyle(AppTheme.textPrimary)
                 .tint(AppTheme.primary)
-
+            
             if !searchText.isEmpty {
                 Button {
                     searchText = ""
@@ -139,14 +139,14 @@ struct HomeView: View {
                 .stroke(AppTheme.borderThin, lineWidth: 0.5)
         )
     }
-
+    
     // MARK: - Populated Content
-
+    
     /// Scrollable content: Recent Note card + Books list
     private var populatedContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 24) {
-
+                
                 // ── Recent Note ──
                 if let recentNote = notes.first {
                     VStack(alignment: .leading, spacing: 12) {
@@ -154,7 +154,7 @@ struct HomeView: View {
                             .font(.title2.bold())
                             .foregroundStyle(AppTheme.textPrimary)
                             .padding(.horizontal, AppTheme.pagePadding)
-
+                        
                         Button {
                             navigationPath.append(recentNote)
                         } label: {
@@ -163,27 +163,27 @@ struct HomeView: View {
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(Color.gray.opacity(0.3))
                                     .frame(width: 4)
-
+                                
                                 VStack(alignment: .leading, spacing: 6) {
                                     Text(recentNote.cues.isEmpty ? "Untitled" : recentNote.cues)
                                         .font(.callout.weight(.semibold))
                                         .foregroundStyle(AppTheme.textPrimary)
-
+                                    
                                     if !recentNote.content.isEmpty {
                                         Text(recentNote.content)
                                             .font(.subheadline)
                                             .foregroundStyle(AppTheme.textPrimary.opacity(0.8))
                                             .lineLimit(2)
                                     }
-
+                                    
                                     Text(smartDateString(for: recentNote.dateCreated) + (recentNote.pageNumber > 0 ? "  •  Page \(recentNote.pageNumber)" : ""))
                                         .font(.caption)
                                         .foregroundStyle(AppTheme.textSecondary)
                                         .italic()
                                 }
-
+                                
                                 Spacer()
-
+                                
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(AppTheme.iconSecondary)
@@ -200,14 +200,14 @@ struct HomeView: View {
                         .padding(.horizontal, AppTheme.pagePadding)
                     }
                 }
-
+                
                 // ── Books ──
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Books")
                         .font(.title2.bold())
                         .foregroundStyle(AppTheme.textPrimary)
                         .padding(.horizontal, AppTheme.pagePadding)
-
+                    
                     // White card container for the book list
                     VStack(spacing: 0) {
                         ForEach(Array(filteredBooks.enumerated()), id: \.element.id) { index, book in
@@ -219,14 +219,14 @@ struct HomeView: View {
                                         Text(book.title)
                                             .font(.callout.weight(.medium))
                                             .foregroundStyle(AppTheme.textPrimary)
-
+                                        
                                         Text("\(book.notes.count) notes")
                                             .font(.footnote)
                                             .foregroundStyle(AppTheme.textSecondary)
                                     }
-
+                                    
                                     Spacer()
-
+                                    
                                     Image(systemName: "chevron.right")
                                         .font(.caption.weight(.semibold))
                                         .foregroundStyle(AppTheme.iconSecondary)
@@ -236,7 +236,7 @@ struct HomeView: View {
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
-
+                            
                             // Separator between rows (not after last)
                             if index < filteredBooks.count - 1 {
                                 Divider()
@@ -251,7 +251,7 @@ struct HomeView: View {
                             .stroke(AppTheme.borderThin, lineWidth: 0.5)
                     )
                     .padding(.horizontal, AppTheme.pagePadding)
-
+                    
                     // Empty search state
                     if !searchText.isEmpty && filteredBooks.isEmpty {
                         VStack(spacing: 10) {
@@ -266,22 +266,22 @@ struct HomeView: View {
                         .padding(.vertical, 40)
                     }
                 }
-
+                
                 Spacer(minLength: 20)
             }
             .padding(.top, 8)
         }
     }
-
+    
     // MARK: - Smart Date Formatting
-
+    
     /// Returns "Today, 22.30", "Yesterday, 14.00", or "Mon, 20 Apr at 22.30"
     private func smartDateString(for date: Date) -> String {
         let calendar = Calendar.current
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH.mm"
         let timeString = timeFormatter.string(from: date)
-
+        
         if calendar.isDateInToday(date) {
             return "Today, \(timeString)"
         } else if calendar.isDateInYesterday(date) {

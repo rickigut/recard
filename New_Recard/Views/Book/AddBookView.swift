@@ -14,23 +14,23 @@ import PhotosUI
 struct AddBookView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-
+    
     /// If provided, the view operates in edit mode
     var bookToEdit: Book?
-
+    
     // Book state
     @State private var title: String = ""
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var coverImageData: Data? = nil
-
+    
     // Note state (only used when creating a new book)
     @State private var keyword: String = ""
     @State private var pageNumberText: String = ""
     @State private var noteContent: String = ""
-
+    
     /// Whether we're editing an existing book
     private var isEditing: Bool { bookToEdit != nil }
-
+    
     /// Validation
     private var isFormValid: Bool {
         let hasTitle = !title.trimmingCharacters(in: .whitespaces).isEmpty
@@ -42,7 +42,7 @@ struct AddBookView: View {
             return hasTitle && (hasKeyword || hasNote)
         }
     }
-
+    
     init(bookToEdit: Book? = nil) {
         self.bookToEdit = bookToEdit
         if let book = bookToEdit {
@@ -50,17 +50,17 @@ struct AddBookView: View {
             _coverImageData = State(initialValue: book.coverImageData)
         }
     }
-
+    
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-
+                
                 VStack(alignment: .leading, spacing: 28) {
-
+                    
                     // ── Cover + Book Title ──
                     HStack(alignment: .top, spacing: 20) {
                         coverPicker
-
+                        
                         VStack(alignment: .leading, spacing: 6) {
                             Text("Book Title")
                                 .font(.body.weight(.semibold))
@@ -69,10 +69,10 @@ struct AddBookView: View {
                                 .textFieldStyle(RecardTextFieldStyle())
                         }
                     }
-
+                    
                     // Divider
                     Divider()
-
+                    
                     // ── First Note Fields (Only when creating a new book) ──
                     if !isEditing {
                         VStack(alignment: .leading, spacing: 24) {
@@ -84,11 +84,11 @@ struct AddBookView: View {
                                 Text("What is the main idea or concept?")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
-
+                                
                                 TextField("Input keyword...", text: $keyword)
                                     .textFieldStyle(RecardTextFieldStyle())
                             }
-
+                            
                             // Page field (numbers only)
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Page")
@@ -97,7 +97,7 @@ struct AddBookView: View {
                                 Text("Page number reference.")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
-
+                                
                                 TextField("Input page number...", text: $pageNumberText)
                                     .textFieldStyle(RecardTextFieldStyle())
                                     .keyboardType(.numberPad)
@@ -105,7 +105,7 @@ struct AddBookView: View {
                                         pageNumberText = newValue.filter { $0.isNumber }
                                     }
                             }
-
+                            
                             // Notes field
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Notes")
@@ -114,7 +114,7 @@ struct AddBookView: View {
                                 Text("Write down your key takeaways and thoughts.")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
-
+                                
                                 ZStack(alignment: .topLeading) {
                                     // Gray background text editor
                                     TextEditor(text: $noteContent)
@@ -124,7 +124,7 @@ struct AddBookView: View {
                                         .background(AppTheme.backgroundBase)
                                         .clipShape(RoundedRectangle(cornerRadius: 12))
                                         .tint(AppTheme.primary)
-
+                                    
                                     // Placeholder
                                     if noteContent.isEmpty {
                                         Text("Input notes...")
@@ -137,7 +137,7 @@ struct AddBookView: View {
                             }
                         }
                     }
-
+                    
                     Spacer(minLength: 40)
                 }
                 .padding(AppTheme.pagePadding)
@@ -166,9 +166,9 @@ struct AddBookView: View {
             }
         }
     }
-
+    
     // MARK: - Cover Image Picker
-
+    
     private var coverPicker: some View {
         PhotosPicker(
             selection: $selectedPhotoItem,
@@ -183,7 +183,7 @@ struct AddBookView: View {
                         RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
                             .strokeBorder(AppTheme.borderThin, lineWidth: 0.5)
                     )
-
+                
                 if let coverImageData, let uiImage = UIImage(data: coverImageData) {
                     Image(uiImage: uiImage)
                         .resizable()
@@ -207,9 +207,9 @@ struct AddBookView: View {
             }
         }
     }
-
+    
     // MARK: - Save
-
+    
     private func saveData() {
         if let book = bookToEdit {
             book.title = title

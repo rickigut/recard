@@ -12,19 +12,19 @@ import SwiftData
 struct NoteDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-
+    
     /// The note being displayed
     @Bindable var note: Note
-
+    
     @State private var showingEditNote = false
     @State private var showingDeleteAlert = false
-
+    
     var body: some View {
         ZStack {
             // White canvas for reading/writing
             AppTheme.surfaceWhite
                 .ignoresSafeArea()
-
+            
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     
@@ -33,7 +33,7 @@ struct NoteDetailView: View {
                         .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.textPrimary)
                         .padding(.top, 16)
-
+                    
                     // ── Metadata ──
                     HStack(spacing: 16) {
                         Label(smartDateString(for: note.dateCreated), systemImage: "calendar")
@@ -47,14 +47,14 @@ struct NoteDetailView: View {
                     
                     Divider()
                         .padding(.vertical, 8)
-
+                    
                     // ── Content ──
                     Text(note.content.isEmpty ? "No content added yet." : note.content)
                         .font(.system(size: 18, weight: .regular, design: .default))
                         .foregroundStyle(note.content.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
                         .lineSpacing(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
-
+                    
                     Spacer(minLength: 60)
                 }
                 .padding(.horizontal, AppTheme.pagePadding)
@@ -67,7 +67,7 @@ struct NoteDetailView: View {
                     Button { showingEditNote = true } label: {
                         Label("Edit", systemImage: "pencil")
                     }
-
+                    
                     Button(role: .destructive) { showingDeleteAlert = true } label: {
                         Label("Delete", systemImage: "trash")
                             .foregroundStyle(Color.red)
@@ -91,15 +91,15 @@ struct NoteDetailView: View {
         }
         .tint(.primary)
     }
-
+    
     // MARK: - Smart Date Formatting
-
+    
     private func smartDateString(for date: Date) -> String {
         let calendar = Calendar.current
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH.mm"
         let timeString = timeFormatter.string(from: date)
-
+        
         if calendar.isDateInToday(date) {
             return "Today, \(timeString)"
         } else if calendar.isDateInYesterday(date) {
@@ -110,9 +110,9 @@ struct NoteDetailView: View {
             return "\(dayFormatter.string(from: date)) at \(timeString)"
         }
     }
-
+    
     // MARK: - Actions
-
+    
     private func deleteNote() {
         modelContext.delete(note)
         dismiss()

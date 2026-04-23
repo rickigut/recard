@@ -24,10 +24,10 @@ private struct OnboardingPage: Identifiable {
 struct OnboardingView: View {
     /// Callback when onboarding completes
     var onFinished: () -> Void
-
+    
     /// Current page index
     @State private var currentPage = 0
-
+    
     /// Onboarding content — 3 pages with realistic copy
     private let pages: [OnboardingPage] = [
         OnboardingPage(
@@ -46,13 +46,13 @@ struct OnboardingView: View {
             description: "Your reading highlights stay organized and easy to revisit-so you remember what matters."
         )
     ]
-
+    
     var body: some View {
         ZStack {
             // Background
             AppTheme.backgroundBase
                 .ignoresSafeArea()
-
+            
             VStack(spacing: 0) {
                 // ── Page Content (swipeable) ──
                 TabView(selection: $currentPage) {
@@ -63,7 +63,7 @@ struct OnboardingView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.3), value: currentPage)
-
+                
                 // ── Bottom Controls ──
                 bottomControls
                     .padding(.horizontal, AppTheme.pagePadding)
@@ -71,14 +71,14 @@ struct OnboardingView: View {
             }
         }
     }
-
+    
     // MARK: - Single Onboarding Page
-
+    
     /// Layout for one onboarding page: icon area + title + description
     private func onboardingPage(_ page: OnboardingPage) -> some View {
         VStack(spacing: 0) {
             Spacer()
-
+            
             // ── Illustration Area (placeholder icon) ──
             RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
                 .fill(AppTheme.surfaceWhite)
@@ -95,16 +95,16 @@ struct OnboardingView: View {
                         .foregroundStyle(AppTheme.iconSecondary.opacity(0.5))
                 }
                 .padding(.horizontal, AppTheme.pagePadding)
-
+            
             Spacer()
                 .frame(height: 40)
-
+            
             // ── Text Content ──
             VStack(alignment: .leading, spacing: 12) {
                 Text(page.title)
                     .font(.title.bold())
                     .foregroundStyle(AppTheme.textPrimary)
-
+                
                 Text(page.description)
                     .font(.body)
                     .foregroundStyle(AppTheme.textSecondary)
@@ -112,13 +112,13 @@ struct OnboardingView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, AppTheme.pagePadding)
-
+            
             Spacer()
         }
     }
-
+    
     // MARK: - Bottom Controls
-
+    
     /// Page dots + Next/Start button
     private var bottomControls: some View {
         HStack {
@@ -131,9 +131,9 @@ struct OnboardingView: View {
                         .animation(.easeInOut(duration: 0.2), value: currentPage)
                 }
             }
-
+            
             Spacer()
-
+            
             // ── Next / Start Button ──
             Button {
                 if currentPage < pages.count - 1 {

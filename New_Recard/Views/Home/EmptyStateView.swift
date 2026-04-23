@@ -13,7 +13,7 @@ import SwiftUI
 struct EmptyStateView: View {
     /// Triggered when the user taps the CTA button
     var onAddBook: () -> Void
-
+    
     var body: some View {
         VStack(spacing: 24) {
             // Icon container — squircle with subtle fill
@@ -25,14 +25,14 @@ struct EmptyStateView: View {
                         .font(.system(size: 52))
                         .foregroundStyle(AppTheme.iconSecondary.opacity(0.5))
                 }
-
+            
             // Instruction text — minimalist
             Text("Your reading highlights live here.\nAdd a book to get started.")
                 .font(.subheadline)
                 .foregroundStyle(AppTheme.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
-
+            
             // Primary CTA button — #FAD100
             Button(action: onAddBook) {
                 Text("Add your first book")

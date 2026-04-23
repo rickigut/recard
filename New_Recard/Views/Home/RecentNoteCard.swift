@@ -13,35 +13,35 @@ import SwiftUI
 struct RecentNoteCard: View {
     /// The note to display
     let note: Note
-
+    
     var body: some View {
         HStack(spacing: 14) {
             // Gray accent bar on the left edge
             RoundedRectangle(cornerRadius: 2)
                 .fill(Color.gray.opacity(0.3))
                 .frame(width: 4)
-
+            
             // Text content
             VStack(alignment: .leading, spacing: 6) {
                 Text(note.cues.isEmpty ? "Untitled" : note.cues)
                     .font(.callout.weight(.semibold))
                     .foregroundStyle(AppTheme.textPrimary)
-
+                
                 if !note.content.isEmpty {
                     Text(note.content)
                         .font(.subheadline)
                         .foregroundStyle(AppTheme.textPrimary.opacity(0.8))
                         .lineLimit(2)
                 }
-
+                
                 Text(smartDateString(for: note.dateCreated) + (note.pageNumber > 0 ? "  •  Page \(note.pageNumber)" : ""))
                     .font(.caption)
                     .foregroundStyle(AppTheme.textSecondary)
                     .italic()
             }
-
+            
             Spacer()
-
+            
             // Navigation chevron
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
@@ -56,15 +56,15 @@ struct RecentNoteCard: View {
                 .stroke(AppTheme.borderThin, lineWidth: 0.5)
         )
     }
-
+    
     // MARK: - Smart Date Formatting
-
+    
     private func smartDateString(for date: Date) -> String {
         let calendar = Calendar.current
         let timeFormatter = DateFormatter()
         timeFormatter.dateFormat = "HH.mm"
         let timeString = timeFormatter.string(from: date)
-
+        
         if calendar.isDateInToday(date) {
             return "Today, \(timeString)"
         } else if calendar.isDateInYesterday(date) {

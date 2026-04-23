@@ -22,16 +22,16 @@ struct SplashScreenView: View {
     @State private var ringRotation: Double = 0
     /// Triggers navigation away from splash
     @State private var isFinished = false
-
+    
     /// Callback when the splash animation completes
     var onFinished: () -> Void
-
+    
     var body: some View {
         ZStack {
             // Background
             AppTheme.surfaceWhite
                 .ignoresSafeArea()
-
+            
             VStack(spacing: 0) {
                 Spacer()
                 // ── Animated Logo ──
@@ -43,7 +43,7 @@ struct SplashScreenView: View {
                     .padding(.bottom, -32) // Reduce gap to text
                     .scaleEffect(logoScale)
                     .opacity(logoOpacity)
-
+                
                 // ── Brand Name & Jargon ──
                 VStack(spacing: 8) {
                     Text("Recard")
@@ -55,7 +55,7 @@ struct SplashScreenView: View {
                         .foregroundStyle(AppTheme.textSecondary)
                 }
                 .opacity(textOpacity)
-
+                
                 Spacer()
                 Spacer()
             }
@@ -66,17 +66,17 @@ struct SplashScreenView: View {
                 logoScale = 1.0
                 logoOpacity = 1.0
             }
-
+            
             // Phase 2: Ring rotates
             withAnimation(.easeInOut(duration: 1.2).delay(0.2)) {
                 ringRotation = 360
             }
-
+            
             // Phase 3: Brand text fades in
             withAnimation(.easeIn(duration: 0.5).delay(0.5)) {
                 textOpacity = 1.0
             }
-
+            
             // Phase 4: Transition out after delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 onFinished()
