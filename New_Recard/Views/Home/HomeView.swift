@@ -70,7 +70,10 @@ struct HomeView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showingAddBook = true } label: {
                         Image(systemName: "plus")
+                            .foregroundStyle(Color.black)
                     }
+                    .tint(AppTheme.primary)
+                    .buttonStyle(.glassProminent)
                 }
             }
             .navigationDestination(for: Book.self) { book in

@@ -157,7 +157,9 @@ struct BookDetailView: View {
                 Menu {
                     Button { showingEditBook = true } label: {
                         Label("Edit", systemImage: "pencil")
+                            .foregroundStyle(Color.black)
                     }
+                    .tint(.black)
                     
                     Button(role: .destructive) { showingDeleteAlert = true } label: {
                         Label("Delete", systemImage: "trash")

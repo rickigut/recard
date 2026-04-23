@@ -112,8 +112,9 @@ struct AddBookView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.body.weight(.semibold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(.gray)
                     }
+                    .tint(.gray)
                 }
                 // Save (✓)
                 ToolbarItem(placement: .topBarTrailing) {
@@ -122,6 +123,8 @@ struct AddBookView: View {
                             .font(.body.weight(.semibold))
                             .foregroundStyle(isFormValid ? Color.primary : Color(UIColor.placeholderText))
                     }
+                    .tint(AppTheme.primary)
+                    .buttonStyle(.glassProminent)
                     .disabled(!isFormValid)
                 }
             }

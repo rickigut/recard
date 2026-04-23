@@ -119,6 +119,8 @@ struct AddNoteView: View {
                             .font(.body.weight(.semibold))
                             .foregroundStyle(isFormValid ? AppTheme.textPrimary : AppTheme.textPlaceholder)
                     }
+                    .tint(AppTheme.primary)
+                    .buttonStyle(.glassProminent)
                     .disabled(!isFormValid)
                 }
             }
