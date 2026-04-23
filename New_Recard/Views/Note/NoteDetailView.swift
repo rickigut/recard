@@ -91,6 +91,8 @@ struct NoteDetailView: View {
         } message: {
             Text("This note will be permanently removed. This action cannot be undone.")
         }
+        .foregroundStyle(Color.black)
+        .tint(.black)
 
     }
     

@@ -188,6 +188,8 @@ struct BookDetailView: View {
         } message: {
             Text("Deleting \"\(book.title)\" will also remove all its notes. This action cannot be undone.")
         }
+        .foregroundStyle(Color.black)
+        .tint(.black)
 
     }
     
