@@ -54,34 +54,25 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            ZStack {
-                // Base background — SystemSecondaryBackground (#F2F2F7)
-                AppTheme.backgroundBase
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    // ── Custom Header ──
-                    header
-                        .padding(.horizontal, AppTheme.pagePadding)
-                        .padding(.top, 8)
-                        .padding(.bottom, 16)
-                    
-                    // ── Content ──
-                    if books.isEmpty {
-                        Spacer()
-                        EmptyStateView { showingAddBook = true }
-                        Spacer()
-                    } else {
-                        populatedContent
-                    }
-                    
-                    // ── Bottom Search Bar ──
-                    searchBar
-                        .padding(.horizontal, AppTheme.pagePadding)
-                        .padding(.bottom, 8)
+            Group {
+                if books.isEmpty {
+                    EmptyStateView { showingAddBook = true }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(AppTheme.backgroundBase)
+                } else {
+                    populatedContent
+                        .background(AppTheme.backgroundBase)
+                        .searchable(text: $searchText, prompt: "Search books...")
                 }
             }
-            .toolbar(.hidden, for: .navigationBar)
+            .navigationTitle("My Notes")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showingAddBook = true } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
             .navigationDestination(for: Book.self) { book in
                 BookDetailView(book: book)
             }
@@ -93,67 +84,7 @@ struct HomeView: View {
             }
         }
     }
-    
-    // MARK: - Header
-    
-    /// Branded header — "Recard" large title + circular "+" button
-    private var header: some View {
-        HStack(alignment: .top) {
-            Text("My Notes")
-                .font(.largeTitle.bold())
-                .foregroundStyle(AppTheme.textPrimary)
-            
-            Spacer()
-            
-            // Circular "+" button with thin border
-            Button { showingAddBook = true } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .frame(width: 40, height: 40)
-                    .background(AppTheme.surfaceWhite)
-                    .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(AppTheme.borderThin, lineWidth: 0.5)
-                    )
-            }
-        }
-    }
-    
-    // MARK: - Bottom Search Bar
-    
-    /// Search bar pinned at the bottom of the screen
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.body)
-                .foregroundStyle(AppTheme.textSecondary)
-            
-            TextField("Search books...", text: $searchText)
-                .font(.body)
-                .foregroundStyle(AppTheme.textPrimary)
-                .tint(AppTheme.primary)
-            
-            if !searchText.isEmpty {
-                Button {
-                    searchText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.body)
-                        .foregroundStyle(AppTheme.textSecondary)
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(AppTheme.surfaceWhite)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.cornerRadius, style: .continuous)
-                .stroke(AppTheme.borderThin, lineWidth: 0.5)
-        )
-    }
+
     
     // MARK: - Populated Content
     
