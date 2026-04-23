@@ -30,7 +30,7 @@ struct NoteDetailView: View {
                     
                     // ── Header / Keyword ──
                     Text(note.cues.isEmpty ? "Untitled Note" : note.cues)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
                         .padding(.top, 16)
                     
@@ -50,7 +50,7 @@ struct NoteDetailView: View {
                     
                     // ── Content ──
                     Text(note.content.isEmpty ? "No content added yet." : note.content)
-                        .font(.system(size: 18, weight: .regular, design: .default))
+                        .font(.system(size: 18, weight: .regular, design: .serif))
                         .foregroundStyle(note.content.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
                         .lineSpacing(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
