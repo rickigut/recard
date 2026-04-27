@@ -48,50 +48,146 @@ struct AddNoteView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 24) {
                     
-                    // ── Grouped Note Fields ──
-                    VStack(alignment: .leading, spacing: 0) {
-                        // Keyword
-                        TextField("Keyword...", text: $keyword)
-                            .font(.body)
+                    // ── Book Details (read-only) ──
+                    if let book = book {
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Book Title row
+                            HStack {
+                                Text("Book title")
+                                    .font(.body)
+                                    .italic()
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                Spacer()
+                                Text(book.title)
+                                    .font(.body)
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                    .multilineTextAlignment(.trailing)
+                            }
                             .padding(.vertical, 14)
                             .padding(.horizontal, 16)
-                        
-                        Divider()
-                            .padding(.leading, 16)
-                        
-                        // Notes — expandable TextEditor
-                        ZStack(alignment: .topLeading) {
-                            TextEditor(text: $noteContent)
-                                .font(.body)
-                                .frame(minHeight: 44)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.horizontal, 11)
-                                .padding(.vertical, 6)
-                                .scrollContentBackground(.hidden)
-                                .tint(AppTheme.primary)
                             
-                            if noteContent.isEmpty {
-                                Text("Notes...")
+                            Divider()
+                                .padding(.leading, 16)
+                            
+                            // Genre row
+                            HStack {
+                                Text("Genre")
                                     .font(.body)
-                                    .foregroundStyle(AppTheme.textPlaceholder)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
-                                    .allowsHitTesting(false)
+                                    .italic()
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                Spacer()
+                                Text(book.genre.rawValue)
+                                    .font(.body)
+                                    .foregroundStyle(AppTheme.textSecondary)
                             }
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                        }
+                        .background(AppTheme.backgroundBase)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
+                    }
+                    
+                    // ── Highlights Label ──
+                    Text("Highlights")
+                        .font(.title3.bold())
+                        .foregroundStyle(AppTheme.textPrimary)
+                    
+                    // ── Note Fields ──
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Note label + subtitle + TextEditor
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Note")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(AppTheme.textPrimary)
+                                .padding(.top, 12)
+                                .padding(.horizontal, 16)
+                            
+                            Text("What i want to remember?")
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .padding(.horizontal, 16)
+                            
+                            ZStack(alignment: .topLeading) {
+                                TextEditor(text: $keyword)
+                                    .font(.body)
+                                    .frame(height: 36)
+                                    .padding(.horizontal, 11)
+                                    .padding(.vertical, 6)
+                                    .scrollContentBackground(.hidden)
+                                    .tint(AppTheme.primary)
+                                
+                                if keyword.isEmpty {
+                                    Text("Write your note here...")
+                                        .font(.body)
+                                        .foregroundStyle(AppTheme.textPlaceholder)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 14)
+                                        .allowsHitTesting(false)
+                                }
+                            }
+                            .padding(.bottom, 8)
                         }
                         
                         Divider()
                             .padding(.leading, 16)
                         
-                        // Page (Number only)
-                        TextField("Page...", text: $pageNumberText)
-                            .font(.body)
-                            .keyboardType(.numberPad)
-                            .padding(.vertical, 14)
-                            .padding(.horizontal, 16)
-                            .onChange(of: pageNumberText) { _, newValue in
-                                pageNumberText = newValue.filter { $0.isNumber }
+                        // Summary label + subtitle + TextEditor
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Summary")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(AppTheme.textPrimary)
+                                .padding(.top, 12)
+                                .padding(.horizontal, 16)
+                            
+                            Text("What word remind me?")
+                                .font(.caption)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .padding(.horizontal, 16)
+                            
+                            ZStack(alignment: .topLeading) {
+                                TextEditor(text: $noteContent)
+                                    .font(.body)
+                                    .frame(height: 36)
+                                    .padding(.horizontal, 11)
+                                    .padding(.vertical, 6)
+                                    .scrollContentBackground(.hidden)
+                                    .tint(AppTheme.primary)
+                                
+                                if noteContent.isEmpty {
+                                    Text("Write your summary here...")
+                                        .font(.body)
+                                        .foregroundStyle(AppTheme.textPlaceholder)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 14)
+                                        .allowsHitTesting(false)
+                                }
                             }
+                            .padding(.bottom, 8)
+                        }
+                        
+                        Divider()
+                            .padding(.leading, 16)
+                        
+                        // Page row — label kiri, value kanan
+                        HStack {
+                            Text("Page")
+                                .font(.body)
+                                .foregroundStyle(AppTheme.textPrimary)
+                            
+                            Spacer()
+                            
+                            TextField("Page number", text: $pageNumberText)
+                                .font(.body)
+                                .multilineTextAlignment(.trailing)
+                                .foregroundStyle(AppTheme.textSecondary)
+                                .keyboardType(.numberPad)
+                                .frame(maxWidth: 100)
+                                .onChange(of: pageNumberText) { _, newValue in
+                                    pageNumberText = newValue.filter { $0.isNumber }
+                                }
+                        }
+                        .padding(.vertical, 14)
+                        .padding(.horizontal, 16)
                     }
                     .background(AppTheme.backgroundBase)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))

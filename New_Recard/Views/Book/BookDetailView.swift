@@ -61,19 +61,50 @@ struct BookDetailView: View {
                         .padding(.horizontal, AppTheme.pagePadding)
                         .padding(.top, 12)
                         
-                        // ── Book Title ──
-                        Text(book.title)
-                            .font(.title2.weight(.semibold))
+                        // ── Book Details Label ──
+                        Text("Book details")
+                            .font(.title3.bold())
                             .foregroundStyle(AppTheme.textPrimary)
                             .padding(.horizontal, AppTheme.pagePadding)
                             .padding(.top, 16)
                         
-                        // ── Genre ──
-                        Text(book.genre.rawValue)
-                            .font(.title3)
-                            .foregroundStyle(AppTheme.textSecondary)
-                            .padding(.horizontal, AppTheme.pagePadding)
-                            .padding(.top, 4)
+                        // ── Book Details Card ──
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Book Title row
+                            HStack {
+                                Text("Book title")
+                                    .font(.body)
+                                    .italic()
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                Spacer()
+                                Text(book.title)
+                                    .font(.body)
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                    .multilineTextAlignment(.trailing)
+                            }
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                            
+                            Divider()
+                                .padding(.leading, 16)
+                            
+                            // Genre row
+                            HStack {
+                                Text("Genre")
+                                    .font(.body)
+                                    .italic()
+                                    .foregroundStyle(AppTheme.textPrimary)
+                                Spacer()
+                                Text(book.genre.rawValue)
+                                    .font(.body)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            }
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 16)
+                        }
+                        .background(AppTheme.backgroundBase)
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
+                        .padding(.horizontal, AppTheme.pagePadding)
                         
                         // ── Divider ──
                         Divider()
@@ -81,7 +112,12 @@ struct BookDetailView: View {
                             .padding(.top, 16)
                             .padding(.bottom, 16)
                         
-                        // ── Notes Section ──
+                        // ── Notes Section Label ──
+                        Text("Notes")
+                            .font(.title3.bold())
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .padding(.horizontal, AppTheme.pagePadding)
+                            .padding(.bottom, 4)
                         if bookNotes.isEmpty {
                             VStack(spacing: 12) {
                                 Image(systemName: "note.text")

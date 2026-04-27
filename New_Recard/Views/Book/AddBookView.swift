@@ -62,42 +62,63 @@ struct AddBookView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 0) {
                     
                     // ── Full-width Cover Image ──
                     coverPicker
+                        .padding(.bottom, 20)
+                    
+                    // ── Book Details Label ──
+                    Text("Book details")
+                        .font(.title2.bold())
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.bottom, 10)
                     
                     // ── Book Title + Genre (grouped container) ──
                     VStack(alignment: .leading, spacing: 0) {
-                        // Book Title
-                        TextField("Book Title...", text: $title)
-                            .font(.body)
-                            .padding(.vertical, 14)
-                            .padding(.horizontal, 16)
+                        // Book Title — label kiri, TextField kanan
+                        HStack {
+                            Text("Book title")
+                                .font(.body)
+//                                .italic()
+                                .foregroundStyle(AppTheme.textPrimary)
+                            Spacer()
+                            TextField("Enter title", text: $title)
+                                .font(.body)
+                                .multilineTextAlignment(.trailing)
+                                .foregroundStyle(AppTheme.textPrimary)
+                                .frame(maxWidth: 180)
+                        }
+                        .padding(.vertical, 14)
+                        .padding(.horizontal, 16)
                         
                         Divider()
                             .padding(.leading, 16)
                         
-                        // Genre Picker
+                        // Genre — label kiri, Picker value kanan
                         HStack {
-                            Picker("Genre", selection: $selectedGenre) {
+                            Text("Genre")
+                                .font(.body)
+//                                .italic()
+                                .foregroundStyle(AppTheme.textPrimary)
+                            Spacer()
+                            Picker("", selection: $selectedGenre) {
                                 ForEach(BookGenre.nonFictionGenres, id: \.self) { genre in
                                     Text(genre.rawValue).tag(genre)
                                 }
                             }
                             .pickerStyle(.menu)
                             .tint(AppTheme.textSecondary)
-                            
-                            Spacer()
                         }
                         .padding(.vertical, 6)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, 16)
                     }
                     .background(AppTheme.backgroundBase)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
                     
                     // Divider
                     Divider()
+                        .padding(.vertical, 20)
                     
                     // ── First Note Fields (Only when creating a new book) ──
                     if !isEditing {
@@ -140,52 +161,115 @@ struct AddBookView: View {
     
     /// Grouped note input fields using native components with inline placeholders.
     private var noteFieldsSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Keyword
-            TextField("Keyword...", text: $keyword)
-                .font(.body)
-                .padding(.vertical, 14)
-                .padding(.horizontal, 16)
+        VStack(alignment: .leading, spacing: 10) {
+            // Highlights Label
+            Text("Highlights")
+                .font(.title2.bold())
+                .foregroundStyle(AppTheme.textPrimary)
             
-            Divider()
-                .padding(.leading, 16)
-            
-            // Notes — expandable TextEditor
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: $noteContent)
-                    .font(.body)
-                    .frame(minHeight: 44)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 11)
-                    .padding(.vertical, 6)
-                    .scrollContentBackground(.hidden)
-                    .tint(AppTheme.primary)
-                
-                if noteContent.isEmpty {
-                    Text("Notes...")
-                        .font(.body)
-                        .foregroundStyle(AppTheme.textPlaceholder)
+            VStack(alignment: .leading, spacing: 0) {
+                // Note label + subtitle + TextField
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Note")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.top, 12)
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                        .allowsHitTesting(false)
+                    
+                    Text("What i want to remember?")
+                        .font(.caption)
+                        .italic()
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .padding(.horizontal, 16)
+                    
+                    // Notes — expandable TextEditor
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $keyword)
+                            .font(.body)
+                            .frame(height: 36)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 6)
+                            .scrollContentBackground(.hidden)
+                            .tint(AppTheme.primary)
+                        
+                        if keyword.isEmpty {
+                            Text("Write your note here...")
+                                .font(.body)
+                                .foregroundStyle(AppTheme.textPlaceholder)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .padding(.bottom, 0)
                 }
-            }
-            
-            Divider()
-                .padding(.leading, 16)
-            
-            // Page (Number only)
-            TextField("Page...", text: $pageNumberText)
-                .font(.body)
-                .keyboardType(.numberPad)
+                
+                Divider()
+                    .padding(.leading, 16)
+                
+                // Summary label + subtitle + TextField
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Summary")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(AppTheme.textPrimary)
+                        .padding(.top, 12)
+                        .padding(.horizontal, 16)
+                    
+                    Text("What word remind me?")
+                        .font(.caption)
+                        .italic()
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .padding(.horizontal, 16)
+                    
+                    // Notes content — expandable TextEditor
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $noteContent)
+                            .font(.body)
+                            .frame(height: 36)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 6)
+                            .scrollContentBackground(.hidden)
+                            .tint(AppTheme.primary)
+                        
+                        if noteContent.isEmpty {
+                            Text("Write your summary here...")
+                                .font(.body)
+                                .foregroundStyle(AppTheme.textPlaceholder)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .padding(.bottom, 0)
+                }
+                
+                Divider()
+                    .padding(.leading, 16)
+                
+                // Page row — label kiri, value kanan
+                HStack {
+                    Text("Page")
+                        .font(.body)
+                        .foregroundStyle(AppTheme.textPrimary)
+                    
+                    Spacer()
+                    
+                    TextField("Enter page", text: $pageNumberText)
+                        .font(.body)
+                        .multilineTextAlignment(.trailing)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        .keyboardType(.numberPad)
+                        .frame(maxWidth: 100)
+                        .onChange(of: pageNumberText) { _, newValue in
+                            pageNumberText = newValue.filter { $0.isNumber }
+                        }
+                }
                 .padding(.vertical, 14)
                 .padding(.horizontal, 16)
-                .onChange(of: pageNumberText) { _, newValue in
-                    pageNumberText = newValue.filter { $0.isNumber }
-                }
+            }
+            .background(AppTheme.backgroundBase)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
         }
-        .background(AppTheme.backgroundBase)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall, style: .continuous))
     }
     
     // MARK: - Cover Image Picker (Full Width)

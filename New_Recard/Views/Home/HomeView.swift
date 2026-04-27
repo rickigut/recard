@@ -68,12 +68,14 @@ struct HomeView: View {
             .navigationTitle("My Notes")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingAddBook = true } label: {
-                        Image(systemName: "square.and.pencil")
-                            .foregroundStyle(Color.black)
+                    if !books.isEmpty {
+                        Button { showingAddBook = true } label: {
+                            Image(systemName: "square.and.pencil")
+                                .foregroundStyle(Color.black)
+                        }
+                        .tint(AppTheme.primary)
+                        .buttonStyle(.glassProminent)
                     }
-                    .tint(AppTheme.primary)
-                    .buttonStyle(.glassProminent)
                 }
             }
             .navigationDestination(for: Book.self) { book in
@@ -281,14 +283,14 @@ struct HomeView: View {
         Button(action: action) {
             Text(title)
                 .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                .foregroundStyle(isSelected ? AppTheme.textPrimary : AppTheme.textSecondary)
+                .foregroundStyle(isSelected ? Color.black : AppTheme.textSecondary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(isSelected ? AppTheme.backgroundBase : AppTheme.surfaceWhite)
+                .background(isSelected ? AppTheme.primary : AppTheme.surfaceWhite)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(isSelected ? AppTheme.textPrimary.opacity(0.3) : AppTheme.borderThin, lineWidth: 0.5)
+                        .stroke(isSelected ? AppTheme.primary : AppTheme.borderThin, lineWidth: isSelected ? 0 : 0.5)
                 )
         }
         .buttonStyle(.plain)
