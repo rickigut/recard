@@ -110,7 +110,8 @@ struct AddNoteView: View {
                             ZStack(alignment: .topLeading) {
                                 TextEditor(text: $keyword)
                                     .font(.body)
-                                    .frame(height: 36)
+                                    .frame(minHeight: 36)
+                                    .fixedSize(horizontal: false, vertical: true)
                                     .padding(.horizontal, 11)
                                     .padding(.vertical, 6)
                                     .scrollContentBackground(.hidden)
@@ -147,7 +148,8 @@ struct AddNoteView: View {
                             ZStack(alignment: .topLeading) {
                                 TextEditor(text: $noteContent)
                                     .font(.body)
-                                    .frame(height: 36)
+                                    .frame(minHeight: 36)
+                                    .fixedSize(horizontal: false, vertical: true)
                                     .padding(.horizontal, 11)
                                     .padding(.vertical, 6)
                                     .scrollContentBackground(.hidden)

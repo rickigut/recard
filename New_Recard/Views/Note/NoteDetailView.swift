@@ -29,7 +29,7 @@ struct NoteDetailView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     
                     // ── Header / Keyword ──
-                    Text(note.cues.isEmpty ? "Untitled Note" : note.cues)
+                    Text(note.content.isEmpty ? "Untitled Note" : note.content)
                         .font(.system(size: 34, weight: .bold, design: .serif))
                         .foregroundStyle(AppTheme.textPrimary)
                         .padding(.top, 16)
@@ -49,9 +49,9 @@ struct NoteDetailView: View {
                         .padding(.vertical, 8)
                     
                     // ── Content ──
-                    Text(note.content.isEmpty ? "No content added yet." : note.content)
+                    Text(note.cues.isEmpty ? "No content added yet." : note.cues)
                         .font(.system(size: 18, weight: .regular, design: .serif))
-                        .foregroundStyle(note.content.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
+                        .foregroundStyle(note.cues.isEmpty ? AppTheme.textPlaceholder : AppTheme.textPrimary)
                         .lineSpacing(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     

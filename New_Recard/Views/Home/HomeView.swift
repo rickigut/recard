@@ -120,12 +120,12 @@ struct HomeView: View {
                                             .frame(width: 4)
                                         
                                         VStack(alignment: .leading, spacing: 6) {
-                                            Text(recentNote.cues.isEmpty ? "Untitled" : recentNote.cues)
+                                            Text(recentNote.content.isEmpty ? "Untitled" : recentNote.content)
                                                 .font(.callout.weight(.semibold))
                                                 .foregroundStyle(AppTheme.textPrimary)
                                             
-                                            if !recentNote.content.isEmpty {
-                                                Text(recentNote.content)
+                                            if !recentNote.cues.isEmpty {
+                                                Text(recentNote.cues)
                                                     .font(.subheadline)
                                                     .foregroundStyle(AppTheme.textPrimary.opacity(0.8))
                                                     .lineLimit(2)

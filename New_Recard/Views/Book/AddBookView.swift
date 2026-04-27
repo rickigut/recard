@@ -179,14 +179,15 @@ struct AddBookView: View {
                     Text("What i want to remember?")
                         .font(.caption)
                         .italic()
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textPrimary)
                         .padding(.horizontal, 16)
                     
                     // Notes — expandable TextEditor
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $keyword)
                             .font(.body)
-                            .frame(height: 36)
+                            .frame(minHeight: 36)
+                            .fixedSize(horizontal: false, vertical: true)
                             .padding(.horizontal, 11)
                             .padding(.vertical, 6)
                             .scrollContentBackground(.hidden)
@@ -218,14 +219,15 @@ struct AddBookView: View {
                     Text("What word remind me?")
                         .font(.caption)
                         .italic()
-                        .foregroundStyle(AppTheme.textSecondary)
+                        .foregroundStyle(AppTheme.textPrimary)
                         .padding(.horizontal, 16)
                     
                     // Notes content — expandable TextEditor
                     ZStack(alignment: .topLeading) {
                         TextEditor(text: $noteContent)
                             .font(.body)
-                            .frame(height: 36)
+                            .frame(minHeight: 36)
+                            .fixedSize(horizontal: false, vertical: true)
                             .padding(.horizontal, 11)
                             .padding(.vertical, 6)
                             .scrollContentBackground(.hidden)
